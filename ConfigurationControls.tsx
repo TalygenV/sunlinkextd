@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { itemVariants } from '../utils/animations';
+import { itemVariants } from "./src/components/utils/animations";
 
-interface ConfigurationControlsProps {
+export interface ConfigurationControlsProps {
   currentConfigIndex: number;
   panelsCount: number;
   totalConfigs: number;

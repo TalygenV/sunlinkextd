@@ -4,7 +4,7 @@ import { Menu } from "lucide-react";
 import React from "react";
 import { matchPath, useLocation } from "react-router-dom";
 import { FormContext } from "../../App";
-import sunlinkLogo from "../../images/solar_panels/sunlink_logo.png";
+import sunlinkLogo from "../../presentation/assets/sunlink_logo.png";
 import { app } from "../../lib/firebase";
 import { SignInModal } from "../ui/modals";
 

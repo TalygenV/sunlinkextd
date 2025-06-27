@@ -1,4 +1,4 @@
-import { CallToActionProps } from "@/types";
+import { CallToActionProps } from "@/domain/types";
 import { motion } from "framer-motion";
 import {
   DollarSign,

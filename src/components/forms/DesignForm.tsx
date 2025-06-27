@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { AnalyticsEvents, trackEvent } from "../../lib/analytics";
 import CallToAction from "../sections/CallToAction";
-import { GenabilityData, SolarData, Tariff } from "@/types";
+import { GenabilityData, SolarData, Tariff } from "@/domain/types";
 
 interface DesignFormProps {
   onBack: () => void;

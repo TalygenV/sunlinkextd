@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUpIcon, DollarSignIcon } from 'lucide-react';
-import { Plan } from '../../types';
+import { Plan } from '../../domain/types';
 
 interface PlanCardProps {
   plan: Plan;

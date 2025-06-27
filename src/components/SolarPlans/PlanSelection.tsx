@@ -17,7 +17,7 @@ import StripeCheckout from "../design/StripeCheckout";
 import PreQualifyModal from "./PreQualifyModal";
 import SavingsAnalysis from "./SavingsAnalysis";
 import SystemSpecs from "./SystemSpecs";
-import { GenabilityData } from "../../types";
+import { GenabilityData } from "../../domain/types";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 interface PlanSelectionProps {

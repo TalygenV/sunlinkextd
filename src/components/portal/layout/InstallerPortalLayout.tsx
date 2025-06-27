@@ -16,7 +16,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { auth } from '../../../lib/firebase';
-import sunlinkPartnerLogo from "../../../images/solar_panels/sunlink_partners_logo.png";  
+import sunlinkPartnerLogo from "../../../presentation/assets/sunlink_partners_logo.png";  
 
 interface InstallerPortalLayoutProps {
   children: React.ReactNode;

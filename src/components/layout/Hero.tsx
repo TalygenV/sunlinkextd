@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 import { useContext } from "react";
 import { FormContext } from "../../App";
-import macbook from "../../images/solar_panels/macbook_hero.png";
-import phoneScreen from "../../images/solar_panels/phone_screen.png";
+import macbook from "../../presentation/assets/macbook_hero.png";
+import phoneScreen from "../../presentation/assets/phone_screen.png";
 import { AnalyticsEvents, trackEvent } from "../../lib/analytics";
 import { DesignForm } from "../forms";
 

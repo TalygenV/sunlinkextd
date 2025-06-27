@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, TrendingUpIcon, BarChart4Icon, LeafIcon } from 'lucide-react';
-import { Plan } from '../../types';
+import { Plan } from '../../domain/types';
 import { calculateSavings } from '../utils/calculations';
 
 interface SavingsAnalysisProps {

@@ -1,4 +1,4 @@
-import { Plan } from '../../types';
+import { Plan } from '../../domain/types';
 
 export const plans: Plan[] = [
   {

@@ -4,8 +4,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { DesignForm } from "../forms";
 import { FormContext } from "../../App";
 import { trackEvent, AnalyticsEvents } from "../../lib/analytics";
-import phoneScreen from "../../images/solar_panels/phone_screen.png";
-import macbook from "../../images/solar_panels/macbook_hero.png";
+import phoneScreen from "./src/presentation/assets/phone_screen.png";
+import macbook from ".src/presentation/assets/macbook_hero.png";
 
 const IPhoneMockup = () => (
   <motion.div

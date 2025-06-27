@@ -40,27 +40,10 @@ import { auth, db, firestore } from "./lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useIdleTimer } from "./components/common/useIdleTimer";
 import { signOut } from "firebase/auth";
+import { UserData } from "./domain/interfaces/UserDataInterface";
+import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
+import { FormContextType } from "./domain/interfaces/FormContextInterface";
 
-// ---------------------------
-// ✅ Correct Context Types
-// ---------------------------
-interface UserData {
-  name: string;
-  address: string;
-  phoneNumber?: string;
-  uid?: string;
-  solarData?: any;
-  monthlyBill?: number;
-}
-
-interface FormContextType {
-  showForm: boolean;
-  setShowForm: Dispatch<SetStateAction<boolean>>;
-  isAuthenticated: boolean;
-  setIsAuthenticated: Dispatch<SetStateAction<boolean>>;
-  userData: UserData;
-  setUserData: Dispatch<SetStateAction<UserData>>;
-}
 
 export const FormContext = createContext<FormContextType>({
   showForm: false,
@@ -70,21 +53,6 @@ export const FormContext = createContext<FormContextType>({
   userData: { name: "", address: "" },
   setUserData: () => {},
 });
-
-// ---------------------------
-// Route Controller Component
-// ---------------------------
-interface RouteControllerProps {
-  isAuthenticated: boolean;
-  isInstaller?: boolean;
-  isAdmin?: boolean;
-  hasCompletedPurchase: boolean;
-  isDataLoaded: boolean;
-  portalComponent?: React.ReactNode;
-  designComponent?: React.ReactNode;
-  homeComponent?: React.ReactNode;
-  loadingComponent?: React.ReactNode;
-}
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -122,9 +90,6 @@ const RouteController: React.FC<RouteControllerProps> = ({
   return <>{homeComponent}</>;
 };
 
-// ---------------------------
-// Main App Component
-// ---------------------------
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInstaller, setIsInstaller] = useState(false);
@@ -252,7 +217,9 @@ function App() {
                     <RouteController
                       {...portalAccessProps}
                       portalComponent={
-                        <ManageInstallersPage isAdmin={isAdmin} />
+                        <ManageInstallersPage isAdmin={isAdmin} onClose={function (): void {
+                          throw new Error("Function not implemented.");
+                        } } />
                       }
                       loadingComponent={<LoadingComponent />}
                     />

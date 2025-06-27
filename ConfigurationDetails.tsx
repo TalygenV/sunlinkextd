@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Zap, BarChart3, ChevronRight, TrendingUp, Battery, CalendarClock, CheckCircle, ArrowRight, Plus, Minus } from 'lucide-react';
-import { itemVariants, cardVariants, segmentCardVariants, controlButtonVariants } from '../utils/animations';
-import { PanelControls, OffsetSelection, ManualPanelControls } from '../manual';
-import { BatterySelectionButtons } from '../ui/buttons';
+import { itemVariants, cardVariants, segmentCardVariants, controlButtonVariants } from './src/components/utils/animations';
+import { PanelControls, OffsetSelection, ManualPanelControls } from './src/components/manual/index';
+import { BatterySelectionButtons } from './src/components/ui/buttons/index';
 
 interface ConfigurationDetailsProps {
   stats: {

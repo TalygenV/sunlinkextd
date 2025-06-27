@@ -18,7 +18,7 @@ import {
   Sun
 } from 'lucide-react';
 
-import { CustomerPortalLayout } from './layout/CustomerPortalLayout';
+import { CustomerPortalLayout } from '../../components/layout/CustomerPortalLayout';
 import { InstallationProgressTracker, InstallationStage } from './progress/InstallationProgressTracker';
 import { DocumentRepository } from './documents/DocumentRepository';
 import { SystemVisualization } from './visualization/SystemVisualization';

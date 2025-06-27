@@ -19,7 +19,7 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { auth, db, storage } from "../../lib/firebase";
-import { OverviewStep } from "../design";
+import { OverviewStep } from ".";
 import {
   calculateTotalStats,
   getAllPanels,

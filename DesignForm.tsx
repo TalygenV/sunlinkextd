@@ -9,8 +9,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import CallToAction from "../sections/CallToAction";
-import { trackEvent, AnalyticsEvents } from "../../lib/analytics";
+import CallToAction from "./src/components/sections/CallToAction";
+import { trackEvent, AnalyticsEvents } from "./src/lib/analytics";
 
 interface DesignFormProps {
   onBack: () => void;
