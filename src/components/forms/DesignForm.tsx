@@ -10,7 +10,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { AnalyticsEvents, trackEvent } from "../../lib/analytics";
+import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import CallToAction from "../sections/CallToAction";
 import { GenabilityData, SolarData, Tariff } from "@/domain/types";
 

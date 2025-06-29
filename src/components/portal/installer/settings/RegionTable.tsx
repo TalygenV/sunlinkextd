@@ -15,7 +15,6 @@ interface RegionTableProps {
 export const RegionTable: React.FC<RegionTableProps> = ({
   rows,
   filter,
-  overrideMap,
   onEdit,
   onDelete,
   installerNameMap,

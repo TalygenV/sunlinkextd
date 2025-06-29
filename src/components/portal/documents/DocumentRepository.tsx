@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, ArrowDown, X, Download, FileText } from 'lucide-react';
-import { auth, db, storage } from '../../../lib/firebase';
+import { auth, db, storage } from '../../../services/firebase';
 import { ref as dbRef, get } from 'firebase/database';
 import { ref as storageRef, getDownloadURL } from 'firebase/storage';
 import { DocumentCard, DocumentInfo } from './DocumentCard';

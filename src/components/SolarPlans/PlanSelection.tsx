@@ -10,7 +10,7 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { auth } from "../../lib/firebase";
+import { auth } from "../../services/firebase";
 import { plans } from "../data/solarPlans";
 import { systemSpecs } from "../data/systemSpecs";
 import StripeCheckout from "../design/StripeCheckout";
@@ -294,8 +294,6 @@ function PlanSelection({
           </div>
         </div>
       )}
-
-      
 
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">

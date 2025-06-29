@@ -4,16 +4,13 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
-import {
-  ArrowRight,
-  ChevronDown
-} from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { useContext } from "react";
-import { FormContext } from "../../App";
 import macbook from "../../presentation/assets/macbook_hero.png";
 import phoneScreen from "../../presentation/assets/phone_screen.png";
-import { AnalyticsEvents, trackEvent } from "../../lib/analytics";
+import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import { DesignForm } from "../forms";
+import FormContext from "../../context/FormContext";
 
 const IPhoneMockup = () => (
   <motion.div

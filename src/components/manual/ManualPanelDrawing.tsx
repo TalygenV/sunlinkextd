@@ -1,36 +1,48 @@
-import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useCallback } from 'react';
-import L from 'leaflet';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import 'leaflet-draw/dist/leaflet.draw.js';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useCallback,
+} from "react";
+import L from "leaflet";
+import "leaflet-draw/dist/leaflet.draw.css";
+import "leaflet-draw/dist/leaflet.draw.js";
 import {
-  area, bbox, booleanPointInPolygon, centroid,
-  destination, circle, polygon as _polygon
-} from '@turf/turf';
-import rotate from '@turf/transform-rotate';
+  area,
+  bbox,
+  booleanPointInPolygon,
+  centroid,
+  destination,
+  circle,
+  polygon as _polygon,
+} from "@turf/turf";
+import rotate from "@turf/transform-rotate";
 
 // Import types from GeoJSON to avoid conflicts with turf
-import { Feature, Point, Polygon } from 'geojson';
+import { Feature, Point } from "geojson";
 
 // Declare Leaflet.Draw module to fix TypeScript errors
-declare module 'leaflet' {
+declare module "leaflet" {
   namespace Draw {
     namespace Event {
       const CREATED: string;
     }
-    
+
     class Polygon {
       constructor(map: L.Map, options?: any);
       enable(): void;
       disable(): void;
     }
   }
-  
+
   namespace Control {
     class Draw extends L.Control {
       constructor(options?: any);
     }
   }
-  
+
   function geoJSON(data: any, options?: any): L.GeoJSON;
   class GeoJSON extends L.Layer {}
   class FeatureGroup extends L.LayerGroup {}
@@ -73,6 +85,7 @@ interface RegionInfo {
 
 // Define the ref interface
 export interface ManualPanelDrawingRef {
+  setObstructionMode(enabled: boolean): unknown;
   regions: Region[];
   regionInfo: RegionInfo[];
   selectedRegionId: number | null;
@@ -82,14 +95,18 @@ export interface ManualPanelDrawingRef {
   handleSolarPanelRotation: (newRotation: number) => void;
   enableDrawMode: () => void;
   disableDrawMode: () => void;
+  
   handleRegionButtonClick: (regionId: number) => void;
   setRotation: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingProps>((props, ref) => {
+const ManualPanelDrawing = forwardRef<
+  ManualPanelDrawingRef,
+  ManualPanelDrawingProps
+>((props, ref) => {
   const {
     mapRef,
-    themeColor = '#38cab3',
+    themeColor = "#38cab3",
     onRegionsChange,
     onRegionInfoChange,
     onSelectedRegionIdChange,
@@ -99,16 +116,22 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
     initialSelectedRegionId,
     initialRotation,
     obstructedPanelIds = new Set<string>(),
-    onPanelObstruction
+    onPanelObstruction,
   } = props;
 
   // State for regions, region info, and selected region
   const [regions, setRegions] = useState<Region[]>(initialRegions || []);
-  const [regionInfo, setRegionInfo] = useState<RegionInfo[]>(initialRegionInfo || []);
-  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(initialSelectedRegionId || null);
+  const [regionInfo, setRegionInfo] = useState<RegionInfo[]>(
+    initialRegionInfo || []
+  );
+  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(
+    initialSelectedRegionId || null
+  );
   const [rotation, setRotation] = useState<number>(initialRotation || 0);
   const [totalPanels, setTotalPanels] = useState<number>(0);
-  const [localObstructedPanelIds, setLocalObstructedPanelIds] = useState<Set<string>>(new Set());
+  const [localObstructedPanelIds, setLocalObstructedPanelIds] = useState<
+    Set<string>
+  >(new Set());
 
   // Refs for drawing controls and next region ID
   const drawControlRef = useRef<any>(null);
@@ -119,7 +142,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Constants for panel dimensions
   const panelWidthMeters = 0.8; // Match the auto panel width
   const panelHeightMeters = 1.43; // Match the auto panel height
-  const PANEL_SPACING_FACTOR = 1.1; // This will create space between panels 
+  const PANEL_SPACING_FACTOR = 1.1; // This will create space between panels
   const PANEL_SPACING = 0.05; // 10cm spacing between panels
 
   // Add initialization flag
@@ -130,7 +153,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
     if (!mapRef.current) return;
 
     const mapInstance = mapRef.current;
-    
+
     // Create a feature group for drawn items
     const drawnItems = new L.FeatureGroup();
     mapInstance.addLayer(drawnItems);
@@ -146,11 +169,11 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
           showArea: true,
           repeatMode: false,
           shapeOptions: {
-            lineCap: 'round',
+            lineCap: "round",
             weight: 4,
             opacity: 1,
             color: themeColor,
-            fillColor: 'black',
+            fillColor: "black",
             fillOpacity: 1,
           },
         },
@@ -161,13 +184,13 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         circlemarker: false,
       },
     });
-    
+
     drawControlRef.current = drawControl;
     mapInstance.addControl(drawControlRef.current);
 
     // Handle polygon creation event
     mapInstance.on(L.Draw.Event.CREATED, (event: any) => {
-      const layer = event.layerType === 'polygon' ? event.layer : null;
+      const layer = event.layerType === "polygon" ? event.layer : null;
 
       if (layer) {
         const polygonCoords = [...layer.getLatLngs()[0]];
@@ -188,20 +211,20 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       showArea: true,
       repeatMode: false,
       shapeOptions: {
-        lineCap: 'round',
+        lineCap: "round",
         weight: 4,
         opacity: 1,
         color: themeColor,
-        fillColor: 'black',
+        fillColor: "black",
         fillOpacity: 0.5,
       },
     };
-    
+
     const drawPolygonHandler = new L.Draw.Polygon(
       mapInstance,
       drawPolygonOptions
     );
-    
+
     polygonDrawRef.current = drawPolygonHandler;
 
     // Cleanup on unmount
@@ -216,36 +239,38 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Update local state when initialRegions or initialRegionInfo changes
   useEffect(() => {
     if (!isInitializing) return; // Skip after initial load
-    
-    if (initialRegions && initialRegions.length > 0) {
 
-      
+    if (initialRegions && initialRegions.length > 0) {
       // Find the highest region ID to set the next ID counter
-      const highestId = Math.max(...initialRegions.map(r => r.id), 0);
+      const highestId = Math.max(...initialRegions.map((r) => r.id), 0);
       nextRegionIdRef.current = highestId + 1;
-      
+
       // Check if initialRegions contains complete data
-      const hasCompleteData = initialRegions.some(r => 
-        r.coordinates && r.coordinates.length > 0 && r.solarPanelData
+      const hasCompleteData = initialRegions.some(
+        (r) => r.coordinates && r.coordinates.length > 0 && r.solarPanelData
       );
-      
+
       if (hasCompleteData) {
         // If regions array is empty, set it directly and recreate panels
         if (regions.length === 0) {
           setRegions(initialRegions);
-          
+
           // Clear any existing layers first
           if (mapRef.current) {
-            manualPanelLayerRef.current.forEach(layer => {
+            manualPanelLayerRef.current.forEach((layer) => {
               mapRef.current.removeLayer(layer);
             });
             manualPanelLayerRef.current.clear();
-            
+
             // Add panels for each region with complete data
-            initialRegions.forEach(region => {
-              if (region.coordinates && region.coordinates.length > 0 && region.solarPanelData) {
+            initialRegions.forEach((region) => {
+              if (
+                region.coordinates &&
+                region.coordinates.length > 0 &&
+                region.solarPanelData
+              ) {
                 addSolarPanelsToMap(region.solarPanelData, region.id);
-                
+
                 // Also restore the selected state of panels
                 if (region.selectedIds && region.selectedIds.length > 0) {
                   // For each panel, set its correct visibility state
@@ -253,8 +278,10 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
                   if (layer) {
                     layer.eachLayer((panelLayer: any) => {
                       const panelId = panelLayer.feature.id;
-                      const selectedItem = region.selectedIds.find((item: any) => item.id === panelId);
-                      
+                      const selectedItem = region.selectedIds.find(
+                        (item: any) => item.id === panelId
+                      );
+
                       if (selectedItem && !selectedItem.selected) {
                         // If the panel should be invisible, make it transparent
                         panelLayer.setStyle({ fillOpacity: 0 });
@@ -265,7 +292,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
               }
             });
           }
-          
+
           // Mark initialization as complete after successful load
           setIsInitializing(false);
         }
@@ -275,10 +302,8 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
 
   useEffect(() => {
     if (!isInitializing) return; // Skip after initial load
-    
+
     if (initialRegionInfo && initialRegionInfo.length > 0) {
- 
-      
       // If regionInfo array is empty, set it directly
       if (regionInfo.length === 0) {
         setRegionInfo(initialRegionInfo);
@@ -288,15 +313,18 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
 
   useEffect(() => {
     if (!isInitializing) return; // Skip after initial load
-    
-    if (initialSelectedRegionId !== null && initialSelectedRegionId !== undefined) {
+
+    if (
+      initialSelectedRegionId !== null &&
+      initialSelectedRegionId !== undefined
+    ) {
       setSelectedRegionId(initialSelectedRegionId);
     }
   }, [initialSelectedRegionId, isInitializing]);
 
   useEffect(() => {
     if (!isInitializing) return; // Skip after initial load
-    
+
     if (initialRotation !== undefined) {
       setRotation(initialRotation);
     }
@@ -305,7 +333,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Update parent component when regions change - with initialization guard
   useEffect(() => {
     if (isInitializing) return; // Skip during initialization
-    
+
     if (onRegionsChange) {
       onRegionsChange(regions);
     }
@@ -314,35 +342,41 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Update parent component when region info changes
   useEffect(() => {
     if (isInitializing) return; // Skip during initialization
-    
+
     if (onRegionInfoChange) {
       // Calculate accurate panel counts before sending to parent
-      const updatedRegionInfo = regionInfo.map(region => {
+      const updatedRegionInfo = regionInfo.map((region) => {
         let panelCount = region.panelCount;
-        
+
         // Find the corresponding region in regions array to get actual panel data
-        const fullRegion = regions.find(r => r.id === region.id);
+        const fullRegion = regions.find((r) => r.id === region.id);
         if (fullRegion) {
           // Count visible panels (those without selectedIds or with selected=true)
           if (fullRegion.selectedIds && fullRegion.selectedIds.length > 0) {
-            const selectedCount = fullRegion.selectedIds.filter(item => item.selected !== false).length;
+            const selectedCount = fullRegion.selectedIds.filter(
+              (item) => item.selected !== false
+            ).length;
             // If no panels are explicitly selected, use the total panel count
-            panelCount = selectedCount > 0 ? selectedCount : 
-                         (fullRegion.solarPanelData?.features?.length || region.panelCount);
-          } else if (fullRegion.solarPanelData && fullRegion.solarPanelData.features) {
+            panelCount =
+              selectedCount > 0
+                ? selectedCount
+                : fullRegion.solarPanelData?.features?.length ||
+                  region.panelCount;
+          } else if (
+            fullRegion.solarPanelData &&
+            fullRegion.solarPanelData.features
+          ) {
             // If no selectedIds array, use all panels from solarPanelData
             panelCount = fullRegion.solarPanelData.features.length;
           }
         }
-        
-        
-        
+
         return {
           ...region,
-          panelCount
+          panelCount,
         };
       });
-      
+
       onRegionInfoChange(updatedRegionInfo);
     }
   }, [regionInfo, onRegionInfoChange, isInitializing, regions]);
@@ -350,7 +384,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Update parent component when selected region changes
   useEffect(() => {
     if (isInitializing) return; // Skip during initialization
-    
+
     if (onSelectedRegionIdChange) {
       onSelectedRegionIdChange(selectedRegionId);
     }
@@ -359,7 +393,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Update parent component when total panels change
   useEffect(() => {
     if (isInitializing) return; // Skip during initialization
-    
+
     if (onTotalPanelsChange) {
       onTotalPanelsChange(totalPanels);
     }
@@ -367,25 +401,37 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
 
   // Calculate total panels when region info changes
   useEffect(() => {
-    const newTotalPanels = regionInfo.reduce((sum, region) => sum + region.panelCount, 0);
+    const newTotalPanels = regionInfo.reduce(
+      (sum, region) => sum + region.panelCount,
+      0
+    );
     setTotalPanels(newTotalPanels);
   }, [regionInfo]);
 
   // Convert meters to degrees for panel dimensions with spacing factor
-  const metersToDegrees = (widthMeters: number, heightMeters: number, latitude: number): [number, number] => {
+  const metersToDegrees = (
+    widthMeters: number,
+    heightMeters: number,
+    latitude: number
+  ): [number, number] => {
     // Apply spacing factor to create gaps between panels
     const adjustedWidth = widthMeters * PANEL_SPACING_FACTOR;
     const adjustedHeight = heightMeters * PANEL_SPACING_FACTOR;
 
-    const startPoint = [0, latitude]; 
+    const startPoint = [0, latitude];
 
     // Calculate with adjusted dimensions
     const widthDestination = destination(startPoint, adjustedWidth / 1000, 90, {
-      units: 'kilometers',
+      units: "kilometers",
     });
-    const heightDestination = destination(startPoint, adjustedHeight / 1000, 0, {
-      units: 'kilometers',
-    });
+    const heightDestination = destination(
+      startPoint,
+      adjustedHeight / 1000,
+      0,
+      {
+        units: "kilometers",
+      }
+    );
 
     // Calculate the change in degrees
     const widthDegrees = Math.abs(
@@ -423,24 +469,22 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
     // Rotate the corners around the panel center
     const rotatedCorners = corners.map((corner) => {
       const cornerPt = {
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'Point',
+          type: "Point",
           coordinates: corner,
         },
       };
       const centerPt = {
-        type: 'Feature',
+        type: "Feature",
         geometry: {
-          type: 'Point',
+          type: "Point",
           coordinates: panelCenter,
         },
       };
-      const rotatedCorner = rotate(
-        cornerPt as any,
-        rotation,
-        { pivot: centerPt as any }
-      );
+      const rotatedCorner = rotate(cornerPt as any, rotation, {
+        pivot: centerPt as any,
+      });
       return (rotatedCorner as Feature<Point>).geometry.coordinates;
     });
 
@@ -462,8 +506,8 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
 
     // Add spacing to the step size calculation - this is the key change
     const [stepSizeX, stepSizeY] = [
-      panelWidthMeters + PANEL_SPACING, 
-      panelHeightMeters + PANEL_SPACING
+      panelWidthMeters + PANEL_SPACING,
+      panelHeightMeters + PANEL_SPACING,
     ];
 
     const [stepSizeXDegrees, stepSizeYDegrees] = metersToDegrees(
@@ -484,9 +528,9 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         const y = bounds[1] + stepSizeYDegrees * row;
 
         const pt = {
-          type: 'Feature',
+          type: "Feature",
           geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: [x, y],
           },
         };
@@ -497,13 +541,9 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
 
     // Rotate the entire grid of panels
     const rotatedPoints = points.map((pt) => {
-      return rotate(
-        pt as any,
-        newRotation,
-        {
-          pivot: centroid(turfPolygon),
-        }
-      );
+      return rotate(pt as any, newRotation, {
+        pivot: centroid(turfPolygon),
+      });
     });
 
     // Filter out panels outside the polygon
@@ -522,7 +562,9 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       );
     });
 
-    return filteredPoints.map((filteredPt) => (filteredPt as Feature<Point>).geometry.coordinates);
+    return filteredPoints.map(
+      (filteredPt) => (filteredPt as Feature<Point>).geometry.coordinates
+    );
   };
 
   // Create GeoJSON features for each panel
@@ -563,26 +605,22 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       // Rotate the corners around the panel center
       const rotatedCorners = corners.map((corner) => {
         const cornerPt = {
-          type: 'Feature',
+          type: "Feature",
           geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: corner,
           },
         };
         const centerPt = {
-          type: 'Feature',
+          type: "Feature",
           geometry: {
-            type: 'Point',
+            type: "Point",
             coordinates: coord,
           },
         };
-        const rotatedCorner = rotate(
-          cornerPt as any,
-          newRotation,
-          {
-            pivot: centerPt as any,
-          }
-        );
+        const rotatedCorner = rotate(cornerPt as any, newRotation, {
+          pivot: centerPt as any,
+        });
         return (rotatedCorner as Feature<Point>).geometry.coordinates;
       });
 
@@ -592,22 +630,22 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       const panelId = `manual-panel-${Date.now()}-${index}`;
 
       return {
-        type: 'Feature',
+        type: "Feature",
         id: index,
         properties: {
           id: panelId,
           selected: true,
-          isObstructed: obstructedPanelIds.has(panelId)
+          isObstructed: obstructedPanelIds.has(panelId),
         },
         geometry: {
-          type: 'Polygon',
+          type: "Polygon",
           coordinates: [rotatedCorners],
         },
       };
     });
 
     return {
-      type: 'FeatureCollection',
+      type: "FeatureCollection",
       features: features,
     };
   };
@@ -617,27 +655,30 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
     if (!mapRef.current) return;
     if (solarPanelData && solarPanelData.features.length > 0) {
       const mapInstance = mapRef.current;
-      
+
       // Create a GeoJSON layer for the solar panels
       const solarPanelLayer = L.geoJSON(solarPanelData, {
         regionId: regionId,
         style: (feature) => {
           // If the panel is obstructed, use the obstruction style
-          if (feature?.properties?.isObstructed || obstructedPanelIds.has(feature?.properties.id)) {
+          if (
+            feature?.properties?.isObstructed ||
+            obstructedPanelIds.has(feature?.properties.id)
+          ) {
             return {
-              color: 'rgba(204, 204, 204, 1)',
+              color: "rgba(204, 204, 204, 1)",
               weight: 1.5,
-              fillColor: 'transparent',
+              fillColor: "transparent",
               fillOpacity: 0,
-              opacity: 0.8
+              opacity: 0.8,
             };
           }
-          
+
           // Default style
           return {
             color: "transparent",
             weight: 1.5,
-            fillColor: '#000000',
+            fillColor: "#000000",
             fillOpacity: 0.8,
           };
         },
@@ -645,7 +686,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
           layer.on({
             click: (event: any) => {
               const panelId = feature.properties.id;
-              
+
               if (onPanelObstruction) {
                 onPanelObstruction(panelId);
               } else {
@@ -658,24 +699,27 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
                 }
                 setLocalObstructedPanelIds(newObstructedPanelIds);
               }
-              
+
               // Toggle the visual appearance immediately for better UX
-              const isCurrentlyObstructed = feature?.properties?.isObstructed ||
-                                           obstructedPanelIds.has(panelId) ||
-                                           localObstructedPanelIds.has(panelId);
-              
+              const isCurrentlyObstructed =
+                feature?.properties?.isObstructed ||
+                obstructedPanelIds.has(panelId) ||
+                localObstructedPanelIds.has(panelId);
+
               if (feature && feature.properties) {
                 feature.properties.isObstructed = !isCurrentlyObstructed;
               }
-              
+
               const newIsObstructed = !isCurrentlyObstructed;
-              
+
               event.target.setStyle({
-                color: newIsObstructed ? 'rgba(71, 71, 71, 0.5)' : 'transparent',
+                color: newIsObstructed
+                  ? "rgba(71, 71, 71, 0.5)"
+                  : "transparent",
                 weight: newIsObstructed ? 1.5 : 0,
-                fillColor: newIsObstructed ? 'transparent' : '#000000',
+                fillColor: newIsObstructed ? "transparent" : "#000000",
                 fillOpacity: newIsObstructed ? 0 : 0.8,
-                opacity: newIsObstructed ? 0.8 : 0
+                opacity: newIsObstructed ? 0.8 : 0,
               });
             },
           });
@@ -689,7 +733,10 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   };
 
   // Update solar panels when a polygon is drawn
-  const updateSolarPanels = (polygonCoordinates: number[][], regionId: number): void => {
+  const updateSolarPanels = (
+    polygonCoordinates: number[][],
+    regionId: number
+  ): void => {
     // Create turfPolygon object
     const turfPolygon = _polygon([polygonCoordinates]);
 
@@ -704,7 +751,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       (turfPolygon.geometry.coordinates[0][0][1] +
         turfPolygon.geometry.coordinates[0][2][1]) /
       2;
-      
+
     const solarPanelData = createSolarPanelData(
       panelCoordinates,
       panelWidthMeters,
@@ -725,7 +772,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         selectedIds: [],
       },
     ]);
-    
+
     setRegionInfo((prevRegions) => [
       ...prevRegions,
       {
@@ -734,10 +781,10 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         rotation: rotation,
         shadeStatus: 1,
         orientationNumber: 1.08,
-        orientation: 'N',
+        orientation: "N",
       },
     ]);
-    
+
     setSelectedRegionId(regionId);
 
     addSolarPanelsToMap(solarPanelData, regionId);
@@ -746,33 +793,29 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Delete a region
   const deleteRegion = (regionId: number): void => {
     if (!mapRef.current) return;
-    
+
     const mapInstance = mapRef.current;
-    
+
     // Remove the layer from the map
     const layerToRemove = manualPanelLayerRef.current.get(regionId);
     if (layerToRemove) {
- 
       mapInstance.removeLayer(layerToRemove);
       manualPanelLayerRef.current.delete(regionId);
     } else {
-     
     }
-    
+
     // Find all layers with this regionId and remove them
     mapInstance.eachLayer((layer: any) => {
       if (layer.options && layer.options.regionId === regionId) {
-     
         mapInstance.removeLayer(layer);
       }
     });
-    
+
     const regionIndex = regions.findIndex((r) => r.id === regionId);
     if (regionIndex === -1) {
-   
       return;
     }
-    
+
     // Update selectedRegionId
     if (regions.length === 1) {
       // If this is the last region, set selectedRegionId to null
@@ -785,17 +828,20 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         setSelectedRegionId(regions[0].id);
       }
     }
-    
+
     // Update regions and regionInfo
-  
+
     setRegions((prev) => prev.filter((r) => r.id !== regionId));
     setRegionInfo((prev) => prev.filter((r) => r.id !== regionId));
   };
 
   // Update solar panel rotation
-  const updateSolarPanelRotation = async (newRotation: number, coordinates: number[][]): Promise<void> => {
+  const updateSolarPanelRotation = async (
+    newRotation: number,
+    coordinates: number[][]
+  ): Promise<void> => {
     if (!mapRef.current) return;
-    
+
     const turfPolygon = _polygon([coordinates]);
 
     const panelCoordinates = generateSolarPanels(
@@ -816,7 +862,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       parseFloat(newRotation.toString()),
       turfPolygon
     );
-    
+
     const mapInstance = mapRef.current;
     mapInstance.eachLayer((layer: any) => {
       if (layer.options && layer.options.regionId === selectedRegionId) {
@@ -840,7 +886,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
           : region
       )
     );
-    
+
     if (solarPanelData.features && selectedRegionId !== null) {
       setRegionInfo((prevRegions) =>
         prevRegions.map((region) =>
@@ -858,13 +904,13 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   // Handle solar panel rotation
   const handleSolarPanelRotation = (newRotation: number): void => {
     if (selectedRegionId === null) return;
-    
+
     const region = regions.find((r) => r.id === selectedRegionId);
     if (!region) return;
-    
+
     const coordinates = region.coordinates;
     if (isNaN(newRotation)) return;
-    
+
     requestAnimationFrame(() =>
       requestAnimationFrame(() =>
         updateSolarPanelRotation(newRotation, coordinates)
@@ -876,22 +922,17 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   const enableDrawMode = (): void => {
     // Make sure initialization is complete
     if (isInitializing) {
-  
       setIsInitializing(false);
       // Wait a moment for initialization to complete
       setTimeout(() => {
         if (polygonDrawRef.current) {
-      
           polygonDrawRef.current.enable();
         } else {
-        
         }
       }, 300);
     } else if (polygonDrawRef.current) {
- 
       polygonDrawRef.current.enable();
     } else {
-   
     }
   };
 
@@ -931,7 +972,6 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
       } else if (region.id > 0) {
         // For regions without coordinates (placeholder data), set selectedRegionId
         // but don't try to render panels since we don't have the actual data
-       
       }
     });
   }, [regions, mapRef]);
@@ -947,39 +987,43 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   useEffect(() => {
     // If we're still initializing but there are no regions to load, complete the initialization
     if (isInitializing && (!initialRegions || initialRegions.length === 0)) {
-   
       // Small delay to ensure all other effects have a chance to run
       const timeoutId = setTimeout(() => {
         setIsInitializing(false);
       }, 300);
-      
+
       return () => clearTimeout(timeoutId);
     }
   }, [isInitializing, initialRegions]);
 
-
   // Add an effect to update the visual appearance of panels when obstructedPanelIds changes
   useEffect(() => {
     // For each region, update the visual appearance of obstructed panels
-    regions.forEach(region => {
+    regions.forEach((region) => {
       const layer = manualPanelLayerRef.current.get(region.id);
       if (layer) {
         layer.eachLayer((l: any) => {
           const feature = l.feature;
           if (feature && feature.properties) {
             const panelId = feature.properties.id;
-            const isObstructed = obstructedPanelIds.has(panelId) || localObstructedPanelIds.has(panelId);
-            
+            const isObstructed =
+              obstructedPanelIds.has(panelId) ||
+              localObstructedPanelIds.has(panelId);
+
             // Update the feature property
             feature.properties.isObstructed = isObstructed;
-            
+
             // Update the visual style
             l.setStyle({
-              color: isObstructed ? 'rgba(71, 71, 71, 0.5)' : 'transparent',
+              color: isObstructed ? "rgba(71, 71, 71, 0.5)" : "transparent",
               weight: isObstructed ? 1.5 : 0,
-              fillColor: isObstructed ? 'transparent' : '#000000',
-              fillOpacity: isObstructed ? 0 : (feature.properties.selected === false ? 0 : 0.8),
-              opacity: isObstructed ? 1 : 0
+              fillColor: isObstructed ? "transparent" : "#000000",
+              fillOpacity: isObstructed
+                ? 0
+                : feature.properties.selected === false
+                ? 0
+                : 0.8,
+              opacity: isObstructed ? 1 : 0,
             });
           }
         });
@@ -991,8 +1035,8 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
   useEffect(() => {
     // Calculate total panels (excluding obstructed ones)
     let panelCount = 0;
-    
-    regions.forEach(region => {
+
+    regions.forEach((region) => {
       if (region.solarPanelData && region.solarPanelData.features) {
         // Count only non-obstructed panels
         const activePanels = region.solarPanelData.features.filter(
@@ -1004,9 +1048,9 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
         panelCount += activePanels.length;
       }
     });
-    
+
     setTotalPanels(panelCount);
-    
+
     // Notify parent of panel count change
     if (onTotalPanelsChange) {
       onTotalPanelsChange(panelCount);
@@ -1025,7 +1069,7 @@ const ManualPanelDrawing = forwardRef<ManualPanelDrawingRef, ManualPanelDrawingP
     enableDrawMode,
     disableDrawMode,
     handleRegionButtonClick,
-    setRotation
+    setRotation,
   }));
 
   // The component doesn't render anything visible

@@ -1,5 +1,5 @@
 import { httpsCallable } from "firebase/functions";
-import { functions } from "./firebase";
+import { functions } from "../services/firebase";
 
 export const checkSurveyAvailability = httpsCallable(
   functions,

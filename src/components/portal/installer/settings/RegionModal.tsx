@@ -3,14 +3,21 @@ import { RegionType, RegionRow } from "./hooks";
 import { geocodeAddress, slug } from "../../../../lib/geo";
 import { X, Users } from "lucide-react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db, firestore } from "../../../../lib/firebase";
+import { db, firestore } from "../../../../services/firebase";
 import { set, ref } from "firebase/database";
 import { update } from "firebase/database";
 import { get } from "firebase/database";
 import { getAuth } from "firebase/auth";
 
+
+interface InstallerData {
+  id: string;
+  email: string;
+}
+
 interface RegionModalProps {
   initial?: RegionRow | null;
+  installers: InstallerData[]; 
   onSave: (data: {
     type: RegionType;
     code: string;

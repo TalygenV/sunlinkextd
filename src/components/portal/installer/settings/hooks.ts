@@ -1,15 +1,16 @@
 import { ref as dbRef, onValue } from "firebase/database";
 import { useEffect, useMemo, useState } from "react";
-import { db } from "../../../../lib/firebase";
+import { db } from "../../../../services/firebase";
 
 export type RegionType = "zip" | "city" | "county" | "state";
 
 export interface RegionRow {
-  type: "zip" | "city" | "county" | "state" | "";
+  type: RegionType;
   code: string;
   name: string;
   installerId: string;
-  installerName?: string; // ✅ Add this new optional field
+  installerName?: string;
+  updatedAt?: string;
 }
 
 interface RegionAssignmentsHook {

@@ -1,7 +1,7 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
-import { auth } from '../../lib/firebase';
+import { auth } from '../../services/firebase';
 
 interface StripeCheckoutProps {
   onSuccess?: () => void;

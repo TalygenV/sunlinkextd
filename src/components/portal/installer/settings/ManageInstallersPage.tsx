@@ -2,20 +2,20 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { MapPin, X, Info } from "lucide-react";
 import { InstallerPortalLayout } from "../../layout/InstallerPortalLayout";
-import { useRegionAssignments, RegionRow } from "./hooks";
+import { useRegionAssignments, RegionRow, RegionType } from "./hooks";
 import { Toolbar, RegionFilter } from "./Toolbar";
 import { RegionTable } from "./RegionTable";
 import { RegionModal } from "./RegionModal";
 import { CoverageTester } from "./CoverageTester";
 import { ref, update, get } from "firebase/database";
-import { db, firestore } from "../../../../lib/firebase";
+import { db, firestore } from "../../../../services/firebase";
 import { AddInstallerModal } from "./AddInstallerModal";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { ref as dbRef } from "firebase/database";
 import { remove } from "firebase/database";
 
 interface RegionRowExtended {
-  type: string;
+  type: RegionType;
   code: string;
   name: string;
   installerId: string;

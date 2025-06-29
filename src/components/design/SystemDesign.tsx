@@ -18,7 +18,7 @@ import {
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage";
-import { auth, db, storage } from "../../lib/firebase";
+import { auth, db, storage } from "../../services/firebase";
 import { OverviewStep } from ".";
 import {
   calculateTotalStats,
@@ -27,6 +27,8 @@ import {
   updateActivePanels,
 } from "../utils/panelHelpers";
 import NearmapTestingTwo from "./NearmapTestingTwoManual";
+import DefaultInverterShowcase from "../../components/inverter/DefaultInverterShowcase";
+
 
 // Add this type declaration at the top of the file, after imports
 // Declare global Stripe interface

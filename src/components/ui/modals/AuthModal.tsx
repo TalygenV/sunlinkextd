@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useState } from "react";
-import { app, db, firestore } from "../../../lib/firebase";
+import { app, db, firestore } from "../../../services/firebase";
 
 interface AuthModalProps {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { auth, db } from '../../lib/firebase';
+import { auth, db } from '../../services/firebase';
 import { ref, update, get } from 'firebase/database';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { motion } from 'framer-motion';

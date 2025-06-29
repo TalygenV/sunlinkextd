@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  createContext,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import React, { useState, useEffect } from "react";
 import {
   Routes,
   BrowserRouter as Router,
@@ -30,29 +24,17 @@ import { InstallerProgressTracker } from "./components/portal/installer/Installe
 import { InstallerDocumentsPage } from "./components/portal/installer/InstallerDocumentsPage";
 import { InstallerSettingsPage } from "./components/portal/installer/settings/InstallerSettingsPage";
 import { AddInstallerPage } from "./components/portal/installer/settings/AddInstallerPage";
-import { AnalyticsEvents, trackEvent } from "./lib/analytics";
+import { AnalyticsEvents, trackEvent } from "./services/analytics";
 import OrderSummary from "./components/OrderSummary/OrderSummary";
 import InstallerContract from "./components/InstallerContract/InstallerContract";
 
 import { onAuthStateChanged } from "firebase/auth";
 import { ref, get } from "firebase/database";
-import { auth, db, firestore } from "./lib/firebase";
+import { auth, db, firestore } from "./services/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { useIdleTimer } from "./components/common/useIdleTimer";
-import { signOut } from "firebase/auth";
 import { UserData } from "./domain/interfaces/UserDataInterface";
 import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
-import { FormContextType } from "./domain/interfaces/FormContextInterface";
-
-
-export const FormContext = createContext<FormContextType>({
-  showForm: false,
-  setShowForm: () => {},
-  isAuthenticated: false,
-  setIsAuthenticated: () => {},
-  userData: { name: "", address: "" },
-  setUserData: () => {},
-});
+import FormContext from "./context/FormContext";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -158,6 +140,7 @@ function App() {
       page_path: window.location.pathname,
     });
   }, []);
+
   const portalAccessProps = {
     isAuthenticated,
     isInstaller,
@@ -165,6 +148,7 @@ function App() {
     hasCompletedPurchase: true,
     isDataLoaded: initialDataLoaded,
   };
+
   // Auto logout after 10 seconds of inactivity
   // useIdleTimer(() => {
   //
@@ -217,9 +201,12 @@ function App() {
                     <RouteController
                       {...portalAccessProps}
                       portalComponent={
-                        <ManageInstallersPage isAdmin={isAdmin} onClose={function (): void {
-                          throw new Error("Function not implemented.");
-                        } } />
+                        <ManageInstallersPage
+                          isAdmin={isAdmin}
+                          onClose={function (): void {
+                            throw new Error("Function not implemented.");
+                          }}
+                        />
                       }
                       loadingComponent={<LoadingComponent />}
                     />
@@ -306,6 +293,17 @@ function App() {
                 />
               }
             />
+
+            {/* <Route
+              path="/portal"
+              element={
+                <RouteController
+                  {...portalAccessProps}
+                  designComponent={<CustomerPortal />}
+                  loadingComponent={<LoadingComponent />}
+                />
+              }
+            /> */}
 
             <Route path="/design-return" element={<CheckoutReturn />} />
 

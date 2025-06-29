@@ -8,11 +8,7 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
-export const ErrorState = ({
-  error,
-  title = "Error",
-  onRetry,
-}: ErrorStateProps) => (
+export const ErrorState = ({ error,title = "Error", onRetry,}: ErrorStateProps) => (
   <motion.div
     variants={containerVariants}
     initial="initial"

@@ -1,14 +1,17 @@
-import React, { useState, useMemo } from 'react';
-import { geocodeAddress } from '../../../../lib/geo';
-import { resolveInstaller } from '../../../../lib/regionResolver';
-import { db } from '../../../../lib/firebase';
-import { MapPin } from 'lucide-react';
-import { GeoAutocomplete } from '../../../ui/forms/GeoAutocomplete';
-import { useInstallers } from './hooks';
+import React, { useState, useMemo } from "react";
+import { geocodeAddress } from "../../../../lib/geo";
+import { resolveInstaller } from "../../../../lib/regionResolver";
+import { db } from "../../../../services/firebase";
+import { MapPin } from "lucide-react";
+import { GeoAutocomplete } from "../../../ui/forms/GeoAutocomplete";
+import { useInstallers } from "./hooks";
 
 export const CoverageTester: React.FC = () => {
-  const [result, setResult] = useState<{ installerId: string | null; matchedBy?: string }>({
-    installerId: null
+  const [result, setResult] = useState<{
+    installerId: string | null;
+    matchedBy?: string;
+  }>({
+    installerId: null,
   });
 
   const [lookedUp, setLookedUp] = useState(false);
@@ -24,7 +27,9 @@ export const CoverageTester: React.FC = () => {
     return m;
   }, [installers]);
 
-  const handleResolved = async (parts: Awaited<ReturnType<typeof geocodeAddress>>) => {
+  const handleResolved = async (
+    parts: Awaited<ReturnType<typeof geocodeAddress>>
+  ) => {
     const installerId = await resolveInstaller(parts, db);
     // Find which part was matched – naive check order
     const matchedBy = parts.zip
@@ -46,25 +51,28 @@ export const CoverageTester: React.FC = () => {
         <MapPin size={18} /> Coverage Tester
       </h4>
 
-      <GeoAutocomplete onResolved={handleResolved} types={['address']} />
+      <GeoAutocomplete onResolved={handleResolved} types={["address"]} />
 
       {lookedUp && (
         <p className="mt-4 text-white/90">
           {result.installerId ? (
             <>
-              Responsible installer:{' '}
+              Responsible installer:{" "}
               <span className="font-medium">
                 {installerNameMap[result.installerId] || result.installerId}
               </span>
               {result.matchedBy && (
-                <span className="text-white/60 text-sm"> (matched by {result.matchedBy})</span>
+                <span className="text-white/60 text-sm">
+                  {" "}
+                  (matched by {result.matchedBy})
+                </span>
               )}
             </>
           ) : (
-            'No matching installer found'
+            "No matching installer found"
           )}
         </p>
       )}
     </div>
   );
-}; 
+};

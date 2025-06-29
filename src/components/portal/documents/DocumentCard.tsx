@@ -11,6 +11,7 @@ import {
 
 // Document information interface
 export interface DocumentInfo {
+  downloadUrl: any;
   id: string;
   name: string;
   description?: string;

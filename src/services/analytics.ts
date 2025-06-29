@@ -16,6 +16,8 @@ export const trackEvent = (
 
 // Common analytics events
 export const AnalyticsEvents = {
+  PASSWORD_RESET_EMAIL_SENT: "password_reset_email_sent",
+  PASSWORD_RESET_ERROR: "password_reset_error",
   FORM_START: "form_start",
   FORM_COMPLETE: "form_complete",
   FORM_ABANDON: "form_abandon",

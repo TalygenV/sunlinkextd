@@ -12,8 +12,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Lock, Mail, Phone, User, X } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AnalyticsEvents, trackEvent } from "../../../lib/analytics";
-import { app, db, firestore } from "../../../lib/firebase";
+import { AnalyticsEvents, trackEvent } from "../../../services/analytics";
+import { app, db, firestore } from "../../../services/firebase";
 
 interface SignInModalProps {
   isOpen: boolean;

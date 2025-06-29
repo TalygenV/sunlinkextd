@@ -14,7 +14,7 @@ import {
   Zap,
   Users,
 } from "lucide-react";
-import { auth, db, firestore } from "../../../lib/firebase";
+import { auth, db, firestore } from "../../../services/firebase";
 import { ref, get } from "firebase/database";
 import { InstallerPortalLayout } from "../layout/InstallerPortalLayout";
 import { LoadingState } from "../../ui/loaders";

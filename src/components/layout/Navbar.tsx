@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import React from "react";
 import { matchPath, useLocation } from "react-router-dom";
-import { FormContext } from "../../App";
 import sunlinkLogo from "../../presentation/assets/sunlink_logo.png";
-import { app } from "../../lib/firebase";
+import { app } from "../../services/firebase";
 import { SignInModal } from "../ui/modals";
+import FormContext from "../../context/FormContext";
 
 const auth = getAuth(app);
 
@@ -15,7 +15,7 @@ const navItems = [
   { name: "Why Sunlink?", href: "#why-sunlink" },
   { name: "Plans & Pricing", href: "#plans-pricing" },
   { name: "Contact", href: "#contact" },
-  { name: "Sign In", href: "#" }
+  { name: "Sign In", href: "#" },
 ];
 
 const SCROLL_THRESHOLD = 20;

@@ -9,7 +9,13 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-import { auth, db, storage, app, firestore } from "../../../../lib/firebase";
+import {
+  auth,
+  db,
+  storage,
+  app,
+  firestore,
+} from "../../../../services/firebase";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getDatabase } from "firebase/database";

@@ -1,18 +1,23 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Truck, Calendar, PenTool as Tool, ArrowRight, FileText } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  CheckCircle2,
+  PenTool as Tool,
+  ArrowRight,
+  FileText,
+} from "lucide-react";
 
 const OrderSummary: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const quoteData = JSON.parse(localStorage.getItem('quoteData') || '{}');
+  const quoteData = JSON.parse(localStorage.getItem("quoteData") || "{}");
 
   const handleSubmitOrder = async () => {
     setIsSubmitting(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    navigate('/installer-contract');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    navigate("/installer-contract");
   };
 
   return (
@@ -20,7 +25,9 @@ const OrderSummary: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Order Summary</h1>
-          <p className="text-slate-300">Review your solar system configuration and confirm your order</p>
+          <p className="text-slate-300">
+            Review your solar system configuration and confirm your order
+          </p>
         </div>
 
         <div className="space-y-8">
@@ -40,28 +47,35 @@ const OrderSummary: React.FC = () => {
                 <div>
                   <div className="text-sm text-slate-400">Battery Storage</div>
                   <div className="font-semibold">
-                    {quoteData.batteryCount ? `${quoteData.batteryCount} × 10kWh Battery` : 'Not Selected'}
+                    {quoteData.batteryCount
+                      ? `${quoteData.batteryCount} × 10kWh Battery`
+                      : "Not Selected"}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Roof Replacement</div>
                   <div className="font-semibold">
-                    {quoteData.includeRoof ? 'Included' : 'Not Selected'}
+                    {quoteData.includeRoof ? "Included" : "Not Selected"}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">EV Charger</div>
                   <div className="font-semibold">
-                    {quoteData.includeEvCharger ? 'Level 2 Charger Included' : 'Not Selected'}
+                    {quoteData.includeEvCharger
+                      ? "Level 2 Charger Included"
+                      : "Not Selected"}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <div className="text-sm text-slate-400">Installation Address</div>
+                  <div className="text-sm text-slate-400">
+                    Installation Address
+                  </div>
                   <div className="font-semibold">
-                    {quoteData.address}<br />
+                    {quoteData.address}
+                    <br />
                     {quoteData.city}, {quoteData.state} {quoteData.zipCode}
                   </div>
                 </div>
@@ -103,7 +117,9 @@ const OrderSummary: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Inspection & Activation</h3>
-                  <p className="text-sm text-slate-400">1-2 weeks after installation</p>
+                  <p className="text-sm text-slate-400">
+                    1-2 weeks after installation
+                  </p>
                 </div>
               </div>
             </div>
@@ -120,7 +136,8 @@ const OrderSummary: React.FC = () => {
                 <div>
                   <h3 className="font-semibold">Review & Sign Contract</h3>
                   <p className="text-sm text-slate-400">
-                    After submitting your order, you'll review and sign the installation contract
+                    After submitting your order, you'll review and sign the
+                    installation contract
                   </p>
                 </div>
               </div>
@@ -131,7 +148,8 @@ const OrderSummary: React.FC = () => {
                 <div>
                   <h3 className="font-semibold">Site Survey</h3>
                   <p className="text-sm text-slate-400">
-                    Our team will schedule a detailed site survey within 3-5 business days
+                    Our team will schedule a detailed site survey within 3-5
+                    business days
                   </p>
                 </div>
               </div>
