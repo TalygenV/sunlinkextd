@@ -13,7 +13,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import CallToAction from "../sections/CallToAction";
 import { GenabilityData, SolarData, Tariff } from "@/domain/types";
-
 interface DesignFormProps {
   onBack: () => void;
 }
@@ -231,10 +230,11 @@ export default function DesignForm({ onBack }: DesignFormProps) {
     if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
     const kwhData = await kwhCalcRes.json();
     const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
+const estimatedMonthlyKwh = kwhData?.results?.[0]?.summary?.kW;
     if (!pricePerKwh) throw new Error("kWh estimate not found.");
 
     // 4. Estimate system size in kW (used later for solar profile and display)
-    const estimatedMonthlyKwh = pricePerKwh / 1500;
+    
     const recommendedSizeKw = estimatedMonthlyKwh * 1000;
  await fetch(`${base_url}/rest/v1/profiles`, {
       method: "POST",
@@ -278,7 +278,7 @@ export default function DesignForm({ onBack }: DesignFormProps) {
         serviceTypes: "SOLAR_PV",
         source: { sourceId: "PVWatts", sourceVersion: "8" },
         properties: {
-          systemSize: { keyName: "systemSize", dataValue: recommendedSizeKw / 400 },
+          systemSize: { keyName: "systemSize", dataValue: estimatedMonthlyKwh },
           azimuth: { keyName: "azimuth", dataValue: "180" },
           losses: { keyName: "losses", dataValue: "15" },
           inverterEfficiency: { keyName: "inverterEfficiency", dataValue: "96" },
@@ -360,7 +360,8 @@ const analysis = await fetch(`${base_url}/rest/v1/accounts/analysis`, {
 
     if (!analysis.ok) throw new Error(await analysis.text());
     const analysisData = await analysis.json();
-    console.log("test ",analysisData);
+   // Pull only the first result
+const seriesResult = analysisData?.results?.[0];
 
       const estimatedAnnualSavings =
         estimatedMonthlyKwh * 12 * pricePerKwh * 0.8; // 80% savings
@@ -380,7 +381,11 @@ console.log("recommendedSizeKw",recommendedSizeKw);
         recommendedSizeKw,
         estimatedAnnualSavings,
         providerAccountId,
-        penalCount
+        penalCount,
+        seriesData: {
+    series: seriesResult?.series || [],
+    seriesData: seriesResult?.seriesData || [],
+  },
       };
     } catch (error: unknown) {
       console.error("Genability API error:", error);
@@ -501,7 +506,6 @@ console.log("recommendedSizeKw",recommendedSizeKw);
 console.log("autocomplete",autocomplete);
       autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace();
-        console.log("addressInputRef.current?.value",addressInputRef.current?.value);
         const address = addressInputRef.current?.value;
         const lataddress = place.geometry?.location?.lat();
         const lngaddress = place.geometry?.location?.lng();
