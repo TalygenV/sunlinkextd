@@ -107,15 +107,26 @@ export interface SolarData {
     sw: { latitude: number; longitude: number };
   };
 }
-
+export interface SeriesEntry {
+  seriesId: number;
+  fromDateTime: string;
+  toDateTime: string;
+  rate: number;
+  qty: number;
+  cost: number;
+}
 export interface GenabilityData {
   utilityName: string;
   pricePerKwh: number;
   estimatedMonthlyKwh: number;
   recommendedSizeKw: number;
   estimatedAnnualSavings: number;
-  providerAccountId:String;
-  penalCount:number;
+  providerAccountId: string;
+  penalCount: number;
+  seriesData: {
+    series: SeriesEntry[];
+    seriesData: SeriesEntry[];
+  };
 }
 
 export interface Tariff {

@@ -12,8 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import CallToAction from "../sections/CallToAction";
-import { GenabilityData, SolarData } from "@/domain/types";
-
+import { GenabilityData, SolarData, Tariff } from "@/domain/types";
 interface DesignFormProps {
   onBack: () => void;
 }
@@ -237,68 +236,65 @@ export default function DesignForm({ onBack }: DesignFormProps) {
         }
       );
 
-      if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
-      const kwhData = await kwhCalcRes.json();
-      const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
-      if (!pricePerKwh) throw new Error("kWh estimate not found.");
+    if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
+    const kwhData = await kwhCalcRes.json();
+    const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
+const estimatedMonthlyKwh = kwhData?.results?.[0]?.summary?.kW;
+    if (!pricePerKwh) throw new Error("kWh estimate not found.");
 
-      // 4. Estimate system size in kW (used later for solar profile and display)
-      const estimatedMonthlyKwh = pricePerKwh / 1500;
-      const recommendedSizeKw = estimatedMonthlyKwh * 1000;
-      await fetch(`${base_url}/rest/v1/profiles`, {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${basic_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          providerAccountId: providerAccountId,
-          providerProfileId: `Annual-Consumption-${providerAccountId}`,
-          profileName: `Annual Consumption for ${providerAccountId}`,
-          isDefault: true,
-          serviceTypes: "ELECTRICITY",
-          sourceId: "ReadingEntry",
-          readingData: [
-            {
-              fromDateTime: lastYear,
-              toDateTime: today,
-              quantityUnit: "kWh",
-              quantityValue: pricePerKwh,
-            },
-          ],
-        }),
-      });
+    // 4. Estimate system size in kW (used later for solar profile and display)
+    
+    const recommendedSizeKw = estimatedMonthlyKwh * 1000;
+ await fetch(`${base_url}/rest/v1/profiles`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basic_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        
+    "providerAccountId": providerAccountId,
+    "providerProfileId": `Annual-Consumption-${providerAccountId}`,
+    "profileName": `Annual Consumption for ${providerAccountId}`,
+    "isDefault": true,
+    "serviceTypes": "ELECTRICITY",
+    "sourceId": "ReadingEntry",
+    "readingData": [
+        {
+            "fromDateTime": lastYear,
+            "toDateTime": today,
+            "quantityUnit": "kWh",
+            "quantityValue": pricePerKwh
+        }
+    ]
 
-      // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
-      // const profileDataAnnual = await profileResAnnual.json();
-      // 5. Create Solar Profile
-      await fetch(`${base_url}/rest/v1/profiles`, {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${basic_token}`,
-          "Content-Type": "application/json",
+      }),
+    });
+
+    // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
+    // const profileDataAnnual = await profileResAnnual.json();
+    // 5. Create Solar Profile
+   await fetch(`${base_url}/rest/v1/profiles`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basic_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        providerAccountId: providerAccountId,
+        providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
+        groupBy: "YEAR",
+        serviceTypes: "SOLAR_PV",
+        source: { sourceId: "PVWatts", sourceVersion: "8" },
+        properties: {
+          systemSize: { keyName: "systemSize", dataValue: estimatedMonthlyKwh },
+          azimuth: { keyName: "azimuth", dataValue: "180" },
+          losses: { keyName: "losses", dataValue: "15" },
+          inverterEfficiency: { keyName: "inverterEfficiency", dataValue: "96" },
+          tilt: { keyName: "tilt", dataValue: "25" },
         },
-        body: JSON.stringify({
-          providerAccountId: providerAccountId,
-          providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
-          groupBy: "YEAR",
-          serviceTypes: "SOLAR_PV",
-          source: { sourceId: "PVWatts", sourceVersion: "8" },
-          properties: {
-            systemSize: {
-              keyName: "systemSize",
-              dataValue: recommendedSizeKw / 400,
-            },
-            azimuth: { keyName: "azimuth", dataValue: "180" },
-            losses: { keyName: "losses", dataValue: "15" },
-            inverterEfficiency: {
-              keyName: "inverterEfficiency",
-              dataValue: "96",
-            },
-            tilt: { keyName: "tilt", dataValue: "25" },
-          },
-        }),
-      });
+      }),
+    });
 
       // if (!profileRes.ok) throw new Error(await profileRes.text());
       // const profileData = await profileRes.json();
@@ -368,9 +364,10 @@ export default function DesignForm({ onBack }: DesignFormProps) {
         }),
       });
 
-      if (!analysis.ok) throw new Error(await analysis.text());
-      const analysisData = await analysis.json();
-      console.log("test ", analysisData);
+    if (!analysis.ok) throw new Error(await analysis.text());
+    const analysisData = await analysis.json();
+   // Pull only the first result
+const seriesResult = analysisData?.results?.[0];
 
       const estimatedAnnualSavings =
         estimatedMonthlyKwh * 12 * pricePerKwh * 0.8; // 80% savings
@@ -391,6 +388,10 @@ export default function DesignForm({ onBack }: DesignFormProps) {
         estimatedAnnualSavings,
         providerAccountId,
         penalCount,
+        seriesData: {
+    series: seriesResult?.series || [],
+    seriesData: seriesResult?.seriesData || [],
+  },
       };
     } catch (error: unknown) {
       console.error("Genability API error:", error);
