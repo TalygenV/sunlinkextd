@@ -16,6 +16,7 @@ import teslaModel from "../../products/batteries/model/tesla_battery-opt-opt-opt
 import enphaseModel from "../../products/batteries/model/enphase_battery-opt-opt-opt-compressed.glb?url";
 import franklinModel from "../../products/batteries/model/franklin_battery-opt-opt-opt-compressed.glb?url";
 import solarEdgeModel from "../../products/batteries/model/solar_edge_battery-opt-opt-opt-compressed.glb?url";
+import { batteryOptions } from "../data/battery/batteryOptions";
 
 // Lazy load the 3D model component
 const BatteryModel = lazy(() => import("./BatteryModel.jsx")); // Correct lazy load path
@@ -69,36 +70,7 @@ const BatteryShowcase = ({
 
   // Battery data
   const batteryOptions = [
-    {
-      name: "Tesla Powerwall 3",
-      capacity: 13.5,
-      warranty: 10,
-      warrantyUnit: "years",
-      price: 12000,
-      shortName: "Tesla",
-      modelFile: teslaModel,
-      info: "Perfect for homeowners seeking reliability and smart features. Integrates seamlessly with Tesla solar and provides advanced monitoring capabilities.",
-    },
-    {
-      name: "Enphase 5P",
-      capacity: 10,
-      warranty: 15,
-      warrantyUnit: "years",
-      price: 8000,
-      shortName: "Enphase",
-      modelFile: enphaseModel,
-      info: "Ideal for budget-conscious homeowners looking for excellent reliability and modular design that allows for system expansion",
-    },
-    {
-      name: "Franklin A2",
-      capacity: 10,
-      warranty: 15,
-      warrantyUnit: "years",
-      shortName: "Franklin",
-      price: 9000,
-      modelFile: franklinModel,
-      info: "Best for homes with higher energy needs. Features industry-leading warranty and excellent thermal management for longer life.",
-    },
+    ...batteryOptions,
     {
       name: "SolarEdge BAT-10K1P",
       capacity: 10,

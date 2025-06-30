@@ -7,12 +7,11 @@ import { Toolbar, RegionFilter } from "./Toolbar";
 import { RegionTable } from "./RegionTable";
 import { RegionModal } from "./RegionModal";
 import { CoverageTester } from "./CoverageTester";
-import { ref, update, get } from "firebase/database";
+import { ref, update, get, remove } from "firebase/database";
 import { db, firestore } from "../../../../services/firebase";
 import { AddInstallerModal } from "./AddInstallerModal";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { ref as dbRef } from "firebase/database";
-import { remove } from "firebase/database";
 
 interface RegionRowExtended {
   type: RegionType;
@@ -25,6 +24,7 @@ interface RegionRowExtended {
 
 interface InstallerData {
   id: string;
+  name: string;
   email: string;
 }
 
@@ -45,77 +45,70 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
     installer: "all",
     search: "",
   });
-
   const [editing, setEditing] = useState<RegionRow | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [testerOpen, setTesterOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [addInstallerOpen, setAddInstallerOpen] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
   const fetchData = async () => {
     try {
-      // 1. Fetch all installers
+      console.log(58);
+      setIsDataLoading(true);
       const installersQuery = query(
         collection(firestore, "users"),
         where("role", "==", "Installer")
       );
       const snapshot = await getDocs(installersQuery);
 
-      const installerIdToEmail: Record<string, string> = {};
-      const installerIdToName: Record<string, string> = {};
-
-      snapshot.docs.forEach((doc) => {
+      const installerMap = snapshot.docs.reduce((acc, doc) => {
         const data = doc.data();
-        installerIdToEmail[doc.id] = data.email || " ";
-        installerIdToName[doc.id] = data.name || " ";
-      });
+        acc[doc.id] = {
+          email: data.email || " ",
+          name: data.name || " ",
+        };
+        return acc;
+      }, {} as Record<string, { email: string; name: string }>);
 
-      // 2. Get installerRegionMapping from Realtime DB
       const mappingSnap = await get(dbRef(db, "installerRegionMapping"));
       const regionMap = mappingSnap.val() || {};
 
       const installerRows: RegionRowExtended[] = [];
       const installerIdSet = new Set<string>();
 
-      // 3. Only process installers who have region mapping
-      Object.keys(regionMap).forEach((installerId) => {
-        const regionData = regionMap[installerId];
-        const installerEmail = installerIdToEmail[installerId] || " ";
-        const installerName = installerIdToName[installerId] || " ";
+      for (const installerId in regionMap) {
+        const regions = regionMap[installerId];
+        const installer = installerMap[installerId];
 
-        Object.entries(regionData).forEach(([regionType, regionCode]: any) => {
-          if (["zip", "city", "county", "state"].includes(regionType)) {
-            const finalCode =
-              regionCode && regionCode !== "null" ? regionCode : "";
+        if (!installer) continue;
 
-            if (finalCode) {
-              installerRows.push({
-                type: regionType as "zip" | "city" | "county" | "state",
-                code: finalCode,
-                name: finalCode,
-                installerId,
-                installerEmail,
-                installerName,
-              });
-
-              installerIdSet.add(installerId); // ✅ Track installerIds who have region
-            }
+        for (const [type, code] of Object.entries(regions)) {
+          if (
+            ["zip", "city", "county", "state"].includes(type) &&
+            code &&
+            code !== "null" &&
+            code !== null
+          ) {
+            const finalCode = code && code !== "null" ? code : "";
+            installerRows.push({
+              type: type as RegionType,
+              code: finalCode,
+              name: finalCode,
+              installerId,
+              installerEmail: installer.email,
+              installerName: installer.name,
+            });
+            installerIdSet.add(installerId);
           }
-        });
-      });
+        }
+      }
 
       setRows(installerRows);
 
-      // 4. Now build installersList only from installerIds present in installerRows
-      // 4. Now build installersList only from installerIds present in installerRows and having a name
       const installersList = snapshot.docs
-        .filter(
-          (doc) =>
-            installerIdSet.has(doc.id) &&
-            doc.data().name &&
-            doc.data().name.trim() !== ""
-        )
+        .filter((doc) => installerIdSet.has(doc.id) && doc.data().name?.trim())
         .map((doc) => {
           const data = doc.data();
           return {
@@ -124,8 +117,11 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
             email: data.email || " ",
           };
         });
+      console.log(installerRows);
 
+      console.log(installersList);
       setInstallers(installersList);
+      setIsDataLoading(false);
     } catch (err) {
       console.error("❌ Error loading installer region data:", err);
     }
@@ -136,11 +132,10 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
   }, []);
 
   const installerNameMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    installers.forEach((ins) => {
-      map[ins.id] = ins.email || ins.id;
-    });
-    return map;
+    return installers.reduce((acc, ins) => {
+      acc[ins.id] = ins.email || ins.id;
+      return acc;
+    }, {} as Record<string, string>);
   }, [installers]);
 
   const openModal = (row?: RegionRow) => {
@@ -153,14 +148,19 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
     setEditing(null);
   };
 
-  const handleSave = async (data: {
+  const handleSave = async ({
+    type,
+    code,
+    name,
+    installerId,
+    previousInstallerId,
+  }: {
     type: string;
     code: string;
     name: string;
     installerId: string;
     previousInstallerId?: string;
   }) => {
-    const { type, code, name, installerId, previousInstallerId } = data;
     const updates: Record<string, any> = {
       [`/regionAssignments/${type}/${code}`]: {
         installerId,
@@ -178,39 +178,18 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
 
     await update(ref(db), updates);
     setSuccess(true);
-
-    // Wait for 3 seconds before closing the modal
-    setTimeout(() => {
-      onClose();
-    }, 3000);
     closeModal();
-
-    // ✅ Fetch fresh data after save
     fetchData();
+    onClose();
+    //setTimeout(onClose, 3000);
   };
-
-  // const handleDelete = async (row: RegionRow) => {
-  //   if (!window.confirm("Delete this region assignment?")) return;
-  //   const updates: Record<string, any> = {
-  //     [`/regionAssignments/${row.type}/${row.code}`]: null,
-  //     [`/installers/${row.installerId}/assignments/${row.type}-${row.code}`]:
-  //       null,
-  //   };
-  //   await update(ref(db), updates);
-  // };
 
   const handleDelete = async (row: RegionRow) => {
     try {
-      // Delete the specific region for the installer
       await remove(
         ref(db, `installerRegionMapping/${row.installerId}/${row.type}`)
       );
-
-      // ✅ Optional: You may also want to refresh data after delete
       fetchData();
-
-      // ✅ Optional: Show success message
-      console.log("✅ Region deleted successfully");
     } catch (error) {
       console.error("❌ Error deleting installer region mapping:", error);
     }
@@ -261,7 +240,6 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
                 </button>
               </h2>
             </div>
-
             <div className="hidden md:flex gap-3 ml-auto items-center">
               <button
                 onClick={() => setTesterOpen(true)}
@@ -271,39 +249,18 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
                 <MapPin size={18} />
               </button>
               <button
-                className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 text-sm font-medium"
                 onClick={() => setAddInstallerOpen(true)}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 text-sm font-medium"
               >
                 Add Installer
               </button>
               <button
-                className="px-6 py-3 bg-black hover:bg-black/90 text-white rounded-lg shadow-lg text-sm font-medium border border-white/20"
                 onClick={() => openModal()}
+                className="px-6 py-3 bg-black hover:bg-black/90 text-white rounded-lg shadow-lg text-sm font-medium border border-white/20"
               >
                 Add Region
               </button>
             </div>
-          </div>
-
-          <div className="md:hidden flex flex-col sm:flex-row gap-4 mb-6 w-full">
-            <button
-              onClick={() => setTesterOpen(true)}
-              className="flex items-center justify-center gap-2 py-4 bg-black/40 hover:bg-white/10 border border-white/10 text-white rounded-lg text-base font-medium"
-            >
-              <MapPin size={18} /> Coverage Tester
-            </button>
-            <button
-              className="flex-1 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 text-center text-base font-medium"
-              onClick={() => setAddInstallerOpen(true)}
-            >
-              Add Installer
-            </button>
-            <button
-              className="flex-1 py-4 bg-black hover:bg-black/90 text-white rounded-lg shadow-lg text-center text-base font-medium border border-white/10"
-              onClick={() => openModal()}
-            >
-              Add Region
-            </button>
           </div>
 
           <Toolbar
@@ -317,8 +274,9 @@ export const ManageInstallersPage: React.FC<ManageRegionsPageProps> = ({
             filter={filter}
             overrideMap={overrideMap}
             installerNameMap={installerNameMap}
-            onEdit={(row) => openModal(row)}
+            onEdit={openModal}
             onDelete={handleDelete}
+            isDataLoading={isDataLoading}
           />
 
           {modalOpen && (

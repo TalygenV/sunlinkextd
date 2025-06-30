@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Trash2, PlusCircle, RefreshCw, Layers } from 'lucide-react';
-import { controlButtonVariants } from '../utils/animations';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  ChevronLeft,
+  Trash2,
+  PlusCircle,
+  RefreshCw,
+  Layers,
+} from "lucide-react";
+import { controlButtonVariants } from "../utils/animations";
 
 interface Region {
   id: number;
@@ -35,7 +42,7 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
   regions = [],
   selectedRegionId = null,
   onRegionSelect,
-  obstructedPanelIds = new Set<string>()
+  obstructedPanelIds = new Set<string>(),
 }) => {
   // Simple indicator for showing "Calculating..." text
   const [isRotating, setIsRotating] = useState<boolean>(false);
@@ -46,35 +53,40 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
     if (region.solarPanelData?.features?.length) {
       // Filter out obstructed panels using the passed in obstructedPanelIds
       const nonObstructedPanels = region.solarPanelData.features.filter(
-        (feature: any) => 
+        (feature: any) =>
           !obstructedPanelIds.has(feature.properties.id) && // Check against obstructedPanelIds
-          !feature.properties.isObstructed && 
+          !feature.properties.isObstructed &&
           feature.properties.selected !== false
       );
       return nonObstructedPanels.length;
     }
-    
+
     // Next try calculatedPanelCount which should be more accurate during rotation
-    if (typeof region.calculatedPanelCount === 'number' && region.calculatedPanelCount > 0) {
+    if (
+      typeof region.calculatedPanelCount === "number" &&
+      region.calculatedPanelCount > 0
+    ) {
       return region.calculatedPanelCount;
     }
-    
-    // Next check standard panelCount 
-    if (typeof region.panelCount === 'number' && region.panelCount > 0) {
+
+    // Next check standard panelCount
+    if (typeof region.panelCount === "number" && region.panelCount > 0) {
       return region.panelCount;
     }
-    
+
     // Try to calculate from other sources
     if (region.features?.length) {
       return region.features.length;
     }
-    
+
     // Calculate from selectedIds if available
     if (region.selectedIds?.length) {
-      const selected = region.selectedIds.filter((item: any) => item.selected !== false).length;
+      const selected = region.selectedIds.filter(
+        (item: any) => item.selected !== false
+      ).length;
       return selected > 0 ? selected : region.selectedIds.length;
     }
-    
+
     // Fallback to 0 if we can't determine
     return 0;
   };
@@ -82,42 +94,37 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
   // Handle rotation change - directly update parent
   const handleRotationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newRotation = parseInt(e.target.value);
-    
+
     // Start showing calculating indicator
     setIsRotating(true);
-    
+
     // Call parent immediately to show visual rotation
     if (onRotationChange) {
       onRotationChange(newRotation);
     }
-    
+
     // Clear the indicator after a delay
     setTimeout(() => {
       setIsRotating(false);
     }, 500);
   };
-  
+
   return (
     <div className="manual-panel-controls ">
-     
-
       {/* Region Selection */}
       {regions.length > 0 && (
         <div className="mb-4">
-       
-          <div   className="flex overflow-x-auto gap-2 pb-2 thin-scrollbar"
-  style={{ 
-    msOverflowStyle: 'none',
-    scrollbarWidth: '3px',
-    cursor: 'pointer',
-   
-  }}
->
+          <div
+            className="flex overflow-x-auto gap-2 pb-2 thin-scrollbar"
+            style={{
+              msOverflowStyle: "none",
+              scrollbarWidth: "3px",
+              cursor: "pointer",
+            }}
+          >
             {regions.map((region, index) => (
               <motion.button
                 key={`region-${region.id}`}
-      
-             
                 onClick={() => onRegionSelect?.(region.id)}
                 className="group relative overflow-visible flex-shrink-0 "
               >
@@ -126,37 +133,37 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
                     {/* Glow Effect */}
                     <motion.div
                       className="absolute -inset-1 rounded-md z-0"
-                      animate={{ 
+                      animate={{
                         opacity: [0.4, 0.6, 0.4],
-                  
                       }}
-                      transition={{ 
+                      transition={{
                         duration: 6,
                         repeat: Infinity,
                         ease: "easeInOut",
-                        times: [0, 0.5, 1]
+                        times: [0, 0.5, 1],
                       }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 via-white/30 to-blue-500/20 rounded-md blur-[20px]" />
                     </motion.div>
                   </>
                 )}
-                
+
                 {/* Button Core */}
-                <div className={`relative z-10 py-1 px-2 rounded-md text-xs text-center transition-all duration-500 ${
-                  selectedRegionId === region.id
-                    ? 'bg-black text-white border border-white/10'
-                    : 'bg-black/40 text-white/90 border border-white/10 hover:bg-black/60'
-                }`}>
+                <div
+                  className={`relative z-10 py-1 px-2 rounded-md text-xs text-center transition-all duration-500 ${
+                    selectedRegionId === region.id
+                      ? "bg-black text-white border border-white/10"
+                      : "bg-black/40 text-white/90 border border-white/10 hover:bg-black/60"
+                  }`}
+                >
                   <div className="flex  items-center justify-center pb-1  border-b border-white/5 ">
                     Section {index + 1}
                   </div>
-                
+
                   <div className="text-[10px] ">
                     {isRotating && region.id === selectedRegionId ? (
                       <span className="inline-flex items-center">
                         <RefreshCw className="w-2 h-2 mr-1 animate-spin" />
-                    
                       </span>
                     ) : (
                       `${getRegionPanelCount(region)} panels`
@@ -176,7 +183,6 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
           whileHover="hover"
           whileTap="tap"
           onClick={() => {
-       
             setTimeout(() => {
               if (onEnableDrawMode) {
                 onEnableDrawMode();
@@ -188,7 +194,7 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
           <PlusCircle className="w-5 h-5 mb-1" />
           <span className="text-xs">Draw Section</span>
         </motion.button>
-        
+
         <motion.button
           variants={controlButtonVariants}
           whileHover="hover"
@@ -199,7 +205,7 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
           <Trash2 className="w-5 h-5 mb-1" />
           <span className="text-xs">Delete Section</span>
         </motion.button>
-        
+
         <motion.button
           variants={controlButtonVariants}
           whileHover="hover"
@@ -216,9 +222,11 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <div className="text-gray-400 text-sm">
-            {selectedRegionId !== null 
-              ? `Section ${regions.findIndex(r => r.id === selectedRegionId) + 1} Rotation` 
-              : 'Section Rotation'}
+            {selectedRegionId !== null
+              ? `Section ${
+                  regions.findIndex((r) => r.id === selectedRegionId) + 1
+                } Rotation`
+              : "Section Rotation"}
           </div>
           <div className="text-white text-sm">{currentRotation}°</div>
         </div>
@@ -239,4 +247,4 @@ export const ManualPanelControls: React.FC<ManualPanelControlsProps> = ({
   );
 };
 
-export default ManualPanelControls; 
+export default ManualPanelControls;

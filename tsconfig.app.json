@@ -10,7 +10,7 @@
     },
     "types": ["vite/client"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/components/calender/Calendar.jsx"],
   "allowImportingTsExtensions": true,
   "exclude": ["node_modules"]
 }

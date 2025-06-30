@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { X, Download, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 import { DocumentInfo } from "./DocumentCard";
 
 interface DocumentViewerProps {

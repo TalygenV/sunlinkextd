@@ -35,6 +35,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { UserData } from "./domain/interfaces/UserDataInterface";
 import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
 import FormContext from "./context/FormContext";
+import { Tools } from "./components/tool";
+import { Calender } from "./components/calender";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -280,6 +282,27 @@ function App() {
                     />
                   }
                 />
+                <Route
+                  path="/installer/tools"
+                  element={
+                    <RouteController
+                      {...portalAccessProps}
+                      portalComponent={<Tools />}
+                      loadingComponent={<LoadingComponent />}
+                    />
+                  }
+                />
+
+                <Route
+                  path="/installer/calendar"
+                  element={
+                    <RouteController
+                      {...portalAccessProps}
+                      portalComponent={<Calender />}
+                      loadingComponent={<LoadingComponent />}
+                    />
+                  }
+                />
               </>
             )}
 
@@ -293,17 +316,6 @@ function App() {
                 />
               }
             />
-
-            {/* <Route
-              path="/portal"
-              element={
-                <RouteController
-                  {...portalAccessProps}
-                  designComponent={<CustomerPortal />}
-                  loadingComponent={<LoadingComponent />}
-                />
-              }
-            /> */}
 
             <Route path="/design-return" element={<CheckoutReturn />} />
 

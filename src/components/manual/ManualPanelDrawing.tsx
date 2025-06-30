@@ -26,9 +26,9 @@ import { Feature, Point } from "geojson";
 // Declare Leaflet.Draw module to fix TypeScript errors
 declare module "leaflet" {
   namespace Draw {
-    namespace Event {
-      const CREATED: string;
-    }
+    // namespace Event {
+    //   const CREATED: string;
+    // }
 
     class Polygon {
       constructor(map: L.Map, options?: any);

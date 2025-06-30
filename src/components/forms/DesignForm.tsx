@@ -12,7 +12,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import CallToAction from "../sections/CallToAction";
-import { GenabilityData, SolarData, Tariff } from "@/domain/types";
+import { GenabilityData, SolarData } from "@/domain/types";
 
 interface DesignFormProps {
   onBack: () => void;
@@ -103,11 +103,10 @@ export default function DesignForm({ onBack }: DesignFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   type Territory = {
-  name: string;
-  code: string;
-  websiteHome: string;
+    name: string;
+    code: string;
+    websiteHome: string;
     lseId: number;
-
   };
   interface RateBand {
     rateAmount: number;
@@ -149,229 +148,240 @@ export default function DesignForm({ onBack }: DesignFormProps) {
   const GENABILITY_API_KEY =
     import.meta.env.GENABILITY_API_KEY ||
     "e9fd3859-80a0-4802-86b1-add58689c540";
-    const base_url = "https://api.genability.com";
-    const basic_token = "NjQ2M2ZmM2EtMTJjZS00MjQ0LWFiMTEtMWQwOTZiNTQwN2M1OjFkMGM5NTI4LTU1NDktNDhhMy1iYTg5LTZkMWJlYTllMzllNQ=="
+  const base_url = "https://api.genability.com";
+  const basic_token =
+    "NjQ2M2ZmM2EtMTJjZS00MjQ0LWFiMTEtMWQwOTZiNTQwN2M1OjFkMGM5NTI4LTU1NDktNDhhMy1iYTg5LTZkMWJlYTllMzllNQ==";
 
   const fetchUtilityAndTariff = async () => {
-  try {
-    // Input validation
-    if (!address.lat || !address.lng || monthlyBill <= 0) throw new Error("Provide a valid address and monthly bill.");
-    if (!selectedTerritory?.lseId) throw new Error("No utility selected.");
-    if (!GENABILITY_APP_ID || !GENABILITY_API_KEY) throw new Error("Missing API credentials.");
+    try {
+      // Input validation
+      if (!address.lat || !address.lng || monthlyBill <= 0)
+        throw new Error("Provide a valid address and monthly bill.");
+      if (!selectedTerritory?.lseId) throw new Error("No utility selected.");
+      if (!GENABILITY_APP_ID || !GENABILITY_API_KEY)
+        throw new Error("Missing API credentials.");
 
-    const lseId = selectedTerritory.lseId;
-    const today = new Date().toISOString().split("T")[0];
-    const lastYear = new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().split("T")[0];
-    const annualBill = monthlyBill * 12;
-    const randomId = Math.floor(Math.random() * 100000);
-    const providerAccountId = `provider-account-${randomId}`;
-    const accountName = `customer-account-${randomId}`;
+      const lseId = selectedTerritory.lseId;
+      const today = new Date().toISOString().split("T")[0];
+      const lastYear = new Date(
+        new Date().setFullYear(new Date().getFullYear() - 1)
+      )
+        .toISOString()
+        .split("T")[0];
+      const annualBill = monthlyBill * 12;
+      const randomId = Math.floor(Math.random() * 100000);
+      const providerAccountId = `provider-account-${randomId}`;
+      const accountName = `customer-account-${randomId}`;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    // 1. Create Genability Account
-    const accountRes = await fetch(`${base_url}/rest/v1/accounts`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        providerAccountId,
-        accountName,
-        address: { addressString: formattedAddress },
-        properties: {
-          customerClass: {
-            keyName: "customerClass",
-            dataValue: "1",
+      // 1. Create Genability Account
+      const accountRes = await fetch(`${base_url}/rest/v1/accounts`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerAccountId,
+          accountName,
+          address: { addressString: formattedAddress },
+          properties: {
+            customerClass: {
+              keyName: "customerClass",
+              dataValue: "1",
+            },
           },
+        }),
+      });
+
+      if (!accountRes.ok) throw new Error(await accountRes.text());
+      const accountData = await accountRes.json();
+      const accountId = accountData?.results?.[0]?.accountId;
+      if (!accountId) throw new Error("Account ID not found in response.");
+
+      // 2. Set lseId property
+      await fetch(`${base_url}/rest/v1/accounts/${accountId}/properties`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          keyName: "lseId",
+          dataValue: lseId,
+        }),
+      });
 
-    if (!accountRes.ok) throw new Error(await accountRes.text());
-    const accountData = await accountRes.json();
-    const accountId = accountData?.results?.[0]?.accountId;
-    if (!accountId) throw new Error("Account ID not found in response.");
-
-    // 2. Set lseId property
-    await fetch(`${base_url}/rest/v1/accounts/${accountId}/properties`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        keyName: "lseId",
-        dataValue: lseId,
-      }),
-    });
-
-    // 3. Estimate kWh from annual bill
-    const kwhCalcRes = await fetch(`${base_url}/rest/v1/accounts/${accountId}/calculate/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fromDateTime: lastYear,
-        toDateTime: today,
-        billingPeriod: "false",
-        groupBy: "MONTH",
-        detailLevel: "TOTAL",
-        propertyInputs: [
-          { keyName: "total", dataValue: annualBill, unit: "cost" },
-          { keyName: "baselineType", dataValue: "typicalElectricity" },
-        ],
-      }),
-    });
-
-    if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
-    const kwhData = await kwhCalcRes.json();
-    const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
-    if (!pricePerKwh) throw new Error("kWh estimate not found.");
-
-    // 4. Estimate system size in kW (used later for solar profile and display)
-    const estimatedMonthlyKwh = pricePerKwh / 1500;
-    const recommendedSizeKw = estimatedMonthlyKwh * 1000;
- await fetch(`${base_url}/rest/v1/profiles`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        
-    "providerAccountId": providerAccountId,
-    "providerProfileId": `Annual-Consumption-${providerAccountId}`,
-    "profileName": `Annual Consumption for ${providerAccountId}`,
-    "isDefault": true,
-    "serviceTypes": "ELECTRICITY",
-    "sourceId": "ReadingEntry",
-    "readingData": [
+      // 3. Estimate kWh from annual bill
+      const kwhCalcRes = await fetch(
+        `${base_url}/rest/v1/accounts/${accountId}/calculate/`,
         {
-            "fromDateTime": lastYear,
-            "toDateTime": today,
-            "quantityUnit": "kWh",
-            "quantityValue": pricePerKwh
-        }
-    ]
-
-      }),
-    });
-
-    // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
-    // const profileDataAnnual = await profileResAnnual.json();
-    // 5. Create Solar Profile
-   await fetch(`${base_url}/rest/v1/profiles`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        providerAccountId: providerAccountId,
-        providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
-        groupBy: "YEAR",
-        serviceTypes: "SOLAR_PV",
-        source: { sourceId: "PVWatts", sourceVersion: "8" },
-        properties: {
-          systemSize: { keyName: "systemSize", dataValue: recommendedSizeKw / 400 },
-          azimuth: { keyName: "azimuth", dataValue: "180" },
-          losses: { keyName: "losses", dataValue: "15" },
-          inverterEfficiency: { keyName: "inverterEfficiency", dataValue: "96" },
-          tilt: { keyName: "tilt", dataValue: "25" },
-        },
-      }),
-    });
-
-    // if (!profileRes.ok) throw new Error(await profileRes.text());
-    // const profileData = await profileRes.json();
-
-
-
-const analysis = await fetch(`${base_url}/rest/v1/accounts/analysis`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-    "providerAccountId": providerAccountId,
-    "fromDateTime": today,
-    "useIntelligentBaselining": true,
-    "propertyInputs": [
-        {
-            "keyName": "providerProfileId",
-            "dataType": "STRING",
-            "dataValue": `Annual-Consumption-${providerAccountId}`,
-            "scenarios": "before,after",
-            "dataFactor": 1.0
-        },
-        {
-            "keyName": "providerProfileId",
-            "dataType": "STRING",
-            "dataValue": `Solar-Production-PVWatts-6kW-${providerAccountId}`,
-            "scenarios": "solar,after",
-            "dataFactor": 1.0
-        },
-        {
-            "keyName": "projectDuration",
-            "dataType": "INTEGER",
-            "dataValue": "25"
-        },
-        {
-            "keyName": "rateInflation",
-            "dataType": "DECIMAL",
-            "dataValue": "3.0",
-            "scenarios": "before,after"
-        },
-        {
-            "keyName": "rateInflation",
-            "dataType": "DECIMAL",
-            "dataValue": "2.0",
-            "scenarios": "solar"
-        },
-        {
-            "keyName": "solarDegradation",
-            "dataType": "DECIMAL",
-            "dataValue": "0.5",
-            "scenarios": "solar"
-        }
-    ],
-    "rateInputs": [
-        {
-            "chargeType": "CONSUMPTION_BASED",
-            "chargePeriod": "MONTHLY",
-            "transactionType": "BUY",
-            "rateBands": [
-                {
-                    "rateAmount": 0.15
-                }
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${basic_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fromDateTime: lastYear,
+            toDateTime: today,
+            billingPeriod: "false",
+            groupBy: "MONTH",
+            detailLevel: "TOTAL",
+            propertyInputs: [
+              { keyName: "total", dataValue: annualBill, unit: "cost" },
+              { keyName: "baselineType", dataValue: "typicalElectricity" },
             ],
-            "scenarios": "solar"
+          }),
         }
-    ]
+      );
 
-      }),
-    });
+      if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
+      const kwhData = await kwhCalcRes.json();
+      const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
+      if (!pricePerKwh) throw new Error("kWh estimate not found.");
 
-    if (!analysis.ok) throw new Error(await analysis.text());
-    const analysisData = await analysis.json();
-    console.log("test ",analysisData);
+      // 4. Estimate system size in kW (used later for solar profile and display)
+      const estimatedMonthlyKwh = pricePerKwh / 1500;
+      const recommendedSizeKw = estimatedMonthlyKwh * 1000;
+      await fetch(`${base_url}/rest/v1/profiles`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerAccountId: providerAccountId,
+          providerProfileId: `Annual-Consumption-${providerAccountId}`,
+          profileName: `Annual Consumption for ${providerAccountId}`,
+          isDefault: true,
+          serviceTypes: "ELECTRICITY",
+          sourceId: "ReadingEntry",
+          readingData: [
+            {
+              fromDateTime: lastYear,
+              toDateTime: today,
+              quantityUnit: "kWh",
+              quantityValue: pricePerKwh,
+            },
+          ],
+        }),
+      });
+
+      // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
+      // const profileDataAnnual = await profileResAnnual.json();
+      // 5. Create Solar Profile
+      await fetch(`${base_url}/rest/v1/profiles`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerAccountId: providerAccountId,
+          providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
+          groupBy: "YEAR",
+          serviceTypes: "SOLAR_PV",
+          source: { sourceId: "PVWatts", sourceVersion: "8" },
+          properties: {
+            systemSize: {
+              keyName: "systemSize",
+              dataValue: recommendedSizeKw / 400,
+            },
+            azimuth: { keyName: "azimuth", dataValue: "180" },
+            losses: { keyName: "losses", dataValue: "15" },
+            inverterEfficiency: {
+              keyName: "inverterEfficiency",
+              dataValue: "96",
+            },
+            tilt: { keyName: "tilt", dataValue: "25" },
+          },
+        }),
+      });
+
+      // if (!profileRes.ok) throw new Error(await profileRes.text());
+      // const profileData = await profileRes.json();
+
+      const analysis = await fetch(`${base_url}/rest/v1/accounts/analysis`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerAccountId: providerAccountId,
+          fromDateTime: today,
+          useIntelligentBaselining: true,
+          propertyInputs: [
+            {
+              keyName: "providerProfileId",
+              dataType: "STRING",
+              dataValue: `Annual-Consumption-${providerAccountId}`,
+              scenarios: "before,after",
+              dataFactor: 1.0,
+            },
+            {
+              keyName: "providerProfileId",
+              dataType: "STRING",
+              dataValue: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
+              scenarios: "solar,after",
+              dataFactor: 1.0,
+            },
+            {
+              keyName: "projectDuration",
+              dataType: "INTEGER",
+              dataValue: "25",
+            },
+            {
+              keyName: "rateInflation",
+              dataType: "DECIMAL",
+              dataValue: "3.0",
+              scenarios: "before,after",
+            },
+            {
+              keyName: "rateInflation",
+              dataType: "DECIMAL",
+              dataValue: "2.0",
+              scenarios: "solar",
+            },
+            {
+              keyName: "solarDegradation",
+              dataType: "DECIMAL",
+              dataValue: "0.5",
+              scenarios: "solar",
+            },
+          ],
+          rateInputs: [
+            {
+              chargeType: "CONSUMPTION_BASED",
+              chargePeriod: "MONTHLY",
+              transactionType: "BUY",
+              rateBands: [
+                {
+                  rateAmount: 0.15,
+                },
+              ],
+              scenarios: "solar",
+            },
+          ],
+        }),
+      });
+
+      if (!analysis.ok) throw new Error(await analysis.text());
+      const analysisData = await analysis.json();
+      console.log("test ", analysisData);
 
       const estimatedAnnualSavings =
         estimatedMonthlyKwh * 12 * pricePerKwh * 0.8; // 80% savings
-        const penalCount = recommendedSizeKw / 400;
-console.log("pricePerKwh",pricePerKwh);
-console.log("selectedTerritory.name",selectedTerritory.name);
-console.log("estimatedMonthlyKwh",estimatedMonthlyKwh);
-console.log("recommendedSizeKw",recommendedSizeKw);
-  console.log("estimatedAnnualSavings",estimatedAnnualSavings);
-   console.log("penalCount",penalCount);
-    console.log("providerAccountId",providerAccountId);
+      const penalCount = recommendedSizeKw / 400;
+      console.log("pricePerKwh", pricePerKwh);
+      console.log("selectedTerritory.name", selectedTerritory.name);
+      console.log("estimatedMonthlyKwh", estimatedMonthlyKwh);
+      console.log("recommendedSizeKw", recommendedSizeKw);
+      console.log("estimatedAnnualSavings", estimatedAnnualSavings);
+      console.log("penalCount", penalCount);
+      console.log("providerAccountId", providerAccountId);
 
       return {
         utilityName: selectedTerritory.name || "Unknown Utility",
@@ -380,7 +390,7 @@ console.log("recommendedSizeKw",recommendedSizeKw);
         recommendedSizeKw,
         estimatedAnnualSavings,
         providerAccountId,
-        penalCount
+        penalCount,
       };
     } catch (error: unknown) {
       console.error("Genability API error:", error);
@@ -411,7 +421,6 @@ console.log("recommendedSizeKw",recommendedSizeKw);
         }`
       );
       const data = await response.json();
-
 
       if (data.error) {
         throw new Error(
@@ -489,7 +498,7 @@ console.log("recommendedSizeKw",recommendedSizeKw);
   };
   useEffect(() => {
     if (addressInputRef.current && window.google) {
-      console.log("addressInputRef",addressInputRef);
+      console.log("addressInputRef", addressInputRef);
       const autocomplete = new window.google.maps.places.Autocomplete(
         addressInputRef.current,
         {
@@ -498,10 +507,13 @@ console.log("recommendedSizeKw",recommendedSizeKw);
           types: ["address"],
         }
       );
-console.log("autocomplete",autocomplete);
+      console.log("autocomplete", autocomplete);
       autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace();
-        console.log("addressInputRef.current?.value",addressInputRef.current?.value);
+        console.log(
+          "addressInputRef.current?.value",
+          addressInputRef.current?.value
+        );
         const address = addressInputRef.current?.value;
         const lataddress = place.geometry?.location?.lat();
         const lngaddress = place.geometry?.location?.lng();
@@ -524,38 +536,39 @@ console.log("autocomplete",autocomplete);
             const lng = place.geometry.location.lng();
             setAddress({ lat, lng });
           }
-          
 
-try {
-  const response = await fetch(
-    `${base_url}/rest/public/lses?addressString=${address}&country=US&residentialServiceTypes=ELECTRICITY&sortOn=totalCustomers&sortOrder=DESC`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+          try {
+            const response = await fetch(
+              `${base_url}/rest/public/lses?addressString=${address}&country=US&residentialServiceTypes=ELECTRICITY&sortOn=totalCustomers&sortOrder=DESC`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Basic ${basic_token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
 
-  const data = (await response.json()) as {
-  status: string;
-  results: Territory[];
-};
+            const data = (await response.json()) as {
+              status: string;
+              results: Territory[];
+            };
 
-  if (data.status === "success") {
-    const utilityList = data.results || [];
+            if (data.status === "success") {
+              const utilityList = data.results || [];
 
-    // You can filter if needed — for example, ignore records without names or websites:
-    const filteredList = utilityList.filter((u) => u.name && u.websiteHome);
+              // You can filter if needed — for example, ignore records without names or websites:
+              const filteredList = utilityList.filter(
+                (u) => u.name && u.websiteHome
+              );
 
-    setTerritories(filteredList); // Though this should ideally be named setUtilities or similar
-  } else {
-    setTerritories([]);
-  }
-} catch (error) {
-  console.error("Error fetching utilities:", error);
-}
+              setTerritories(filteredList); // Though this should ideally be named setUtilities or similar
+            } else {
+              setTerritories([]);
+            }
+          } catch (error) {
+            console.error("Error fetching utilities:", error);
+          }
         }
       });
     }
@@ -563,7 +576,7 @@ try {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (
       !address.lat ||
       !selectedTerritory ||
@@ -1236,9 +1249,7 @@ try {
                     <input
                       readOnly
                       value={
-                        selectedTerritory
-                          ? `${selectedTerritory.name}`
-                          : ""
+                        selectedTerritory ? `${selectedTerritory.name}` : ""
                       }
                       placeholder="Select a Utility"
                       className="w-full pl-4 pr-10 py-5 bg-black/40 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/20 focus:bg-black/60 transition-all duration-300"
@@ -1283,7 +1294,7 @@ try {
                             setShowDropdown(false);
                           }}
                         >
-                          {territory.name} 
+                          {territory.name}
                         </li>
                       ))}
                     </ul>

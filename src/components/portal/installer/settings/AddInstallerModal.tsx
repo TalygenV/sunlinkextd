@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { X } from "lucide-react";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { initializeApp, getApps } from "firebase/app";
-import type { FirebaseApp } from "firebase/app";
 import { ref as dbRef, update } from "firebase/database";
 import {
   ref as storageRef,

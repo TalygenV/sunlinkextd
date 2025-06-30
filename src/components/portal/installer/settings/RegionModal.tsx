@@ -5,7 +5,6 @@ import { X, Users } from "lucide-react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, firestore } from "../../../../services/firebase";
 import { set, ref } from "firebase/database";
-import { update } from "firebase/database";
 import { get } from "firebase/database";
 import { getAuth } from "firebase/auth";
 

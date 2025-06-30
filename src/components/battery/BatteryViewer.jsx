@@ -1,8 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { motion } from "framer-motion";
 
 // Import all needed assets directly - Vite needs explicit imports
 import modelFile from "../../products/batteries/model/tesla_battery.glb?url";
