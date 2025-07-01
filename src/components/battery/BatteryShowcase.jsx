@@ -67,10 +67,10 @@ const BatteryShowcase = ({
 
     return () => clearTimeout(timer);
   }, [isMobile, viewerKey]);
-
+const baseOptions = batteryOptions;
   // Battery data
-  const batteryOptions = [
-    ...batteryOptions,
+  const batteryOptions2 = [
+    ...baseOptions,
     {
       name: "SolarEdge BAT-10K1P",
       capacity: 10,
@@ -95,7 +95,7 @@ const BatteryShowcase = ({
   // Find the index of the selected battery, if any
   const findSelectedBatteryIndex = () => {
     if (selectedBatteryDetails && selectedBatteryDetails.shortName) {
-      const index = batteryOptions.findIndex(
+      const index = batteryOptions2.findIndex(
         (battery) => battery.shortName === selectedBatteryDetails.shortName
       );
       return index >= 0 ? index : 0;
@@ -220,7 +220,7 @@ const BatteryShowcase = ({
 
   // Get the current battery based on index
   const getCurrentBattery = () => {
-    return batteryOptions[currentBatteryIndex];
+    return batteryOptions2[currentBatteryIndex];
   };
 
   // Initialize with the selected battery or default battery on component mount
@@ -241,7 +241,7 @@ const BatteryShowcase = ({
       // as the rendering logic in the JSX already handles positioning based on currentBatteryIndex
       console.log(
         "Initial battery set to:",
-        batteryOptions[selectedIndex].name
+        batteryOptions2[selectedIndex].name
       );
     }
   }, []); // Empty dependency array means this only runs once on mount
@@ -307,12 +307,12 @@ const BatteryShowcase = ({
     setExpandedCardIndex(null);
 
     // Calculate new index and store it in the ref
-    const newIndex = (currentBatteryIndex + 1) % batteryOptions.length;
+    const newIndex = (currentBatteryIndex + 1) % batteryOptions2.length;
     nextIndexRef.current = newIndex; // Store the target index
 
     // Update the battery name in the parent component
     if (updateCurrentBatteryName) {
-      updateCurrentBatteryName(batteryOptions[newIndex]);
+      updateCurrentBatteryName(batteryOptions2[newIndex]);
     }
 
     // Animate battery positions
@@ -437,7 +437,7 @@ const BatteryShowcase = ({
 
       // Make sure the battery name is updated in the parent component
       if (updateCurrentBatteryName) {
-        updateCurrentBatteryName(batteryOptions[newIndex]);
+        updateCurrentBatteryName(batteryOptions2[newIndex]);
       }
 
       // Reset positions immediately for the new state, including updated rotation
@@ -745,8 +745,8 @@ const BatteryShowcase = ({
                   (p) => p.position === "front"
                 );
                 const battery =
-                  batteryOptions[
-                    (currentBatteryIndex + frontIndex) % batteryOptions.length
+                  batteryOptions2[
+                    (currentBatteryIndex + frontIndex) % batteryOptions2.length
                   ];
                 const position = batteryPositions[frontIndex];
                 const isFront = true;
@@ -896,11 +896,11 @@ const BatteryShowcase = ({
                       : "min-h-[400px] md:min-h-[460px] lg:min-h-[520px]"
                   }`}
                 >
-                  {batteryOptions.map((battery, index) => {
+                  {batteryOptions2.map((battery, index) => {
                     // Calculate the actual index in the current stack
                     const positionIndex =
-                      (index - currentBatteryIndex + batteryOptions.length) %
-                      batteryOptions.length;
+                      (index - currentBatteryIndex + batteryOptions2.length) %
+                      batteryOptions2.length;
                     const position = cardPositions[positionIndex];
 
                     // Determine if this specific card is finishing its move to the front
