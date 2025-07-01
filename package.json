@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "npm config set registry https://registry.npmjs.org/"
+    "postinstall": "npm config set registry https://registry.npmjs.org/" 
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
