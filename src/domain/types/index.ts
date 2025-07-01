@@ -107,6 +107,34 @@ export interface SolarData {
     sw: { latitude: number; longitude: number };
   };
 }
+export interface GenabilitySummary {
+  lifeTimeUtilityAfterCost: number;
+  lifeTimeUtilityAvoidedRate: number;
+  lifetimeAvoidedCost: number;
+  lifetimeSolarCost: number;
+  lifetimeWithoutCost: number;
+  netAvoidedCost: number;
+  netAvoidedCostPctOffset: number;
+  netAvoidedKWh: number;
+  netAvoidedKWhPctOffset: number;
+  netAvoidedRate: number;
+  postTotalCost: number;
+  postTotalKWh: number;
+  postTotalKWhCost: number;
+  postTotalKWhRate: number;
+  postTotalMinCost: number;
+  postTotalNonBypassableCost: number;
+  postTotalNonMinCost: number;
+  postTotalRate: number;
+  preTotalCost: number;
+  preTotalKWh: number;
+  preTotalKWhCost: number;
+  preTotalKWhRate: number;
+  preTotalMinCost: number;
+  preTotalNonBypassableCost: number;
+  preTotalNonMinCost: number;
+  preTotalRate: number;
+}
 export interface SeriesEntry {
   seriesId: number;
   fromDateTime: string;
@@ -126,6 +154,8 @@ export interface GenabilityData {
   seriesData: {
     series: SeriesEntry[];
     seriesData: SeriesEntry[];
+    summary: GenabilitySummary;
+    firstYear?: number;
   };
 }
 

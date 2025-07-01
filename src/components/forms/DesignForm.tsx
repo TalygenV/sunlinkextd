@@ -372,12 +372,12 @@ const seriesResult = analysisData?.results?.[0];
       const estimatedAnnualSavings =
         estimatedMonthlyKwh * 12 * pricePerKwh * 0.8; // 80% savings
       const penalCount = recommendedSizeKw / 400;
-      console.log("pricePerKwh", pricePerKwh);
-      console.log("selectedTerritory.name", selectedTerritory.name);
-      console.log("estimatedMonthlyKwh", estimatedMonthlyKwh);
-      console.log("recommendedSizeKw", recommendedSizeKw);
-      console.log("estimatedAnnualSavings", estimatedAnnualSavings);
-      console.log("penalCount", penalCount);
+      // console.log("pricePerKwh", pricePerKwh);
+      // console.log("selectedTerritory.name", selectedTerritory.name);
+      // console.log("estimatedMonthlyKwh", estimatedMonthlyKwh);
+      // console.log("recommendedSizeKw", recommendedSizeKw);
+      // console.log("estimatedAnnualSavings", estimatedAnnualSavings);
+      // console.log("penalCount", penalCount);
       console.log("providerAccountId", providerAccountId);
 
       return {
@@ -391,6 +391,7 @@ const seriesResult = analysisData?.results?.[0];
         seriesData: {
     series: seriesResult?.series || [],
     seriesData: seriesResult?.seriesData || [],
+    summary: seriesResult?.summary || {},
   },
       };
     } catch (error: unknown) {

@@ -56,10 +56,7 @@ export default function CallToAction({
         console.log("💰 Lifetime Savings:", savingsLifetime?.cost);
 
         // Optionally, store in state:
-        setKwhData({
-          monthly: savingsMonthly?.cost ?? 0,
-          lifetime: savingsLifetime?.cost ?? 0,
-        });
+       
         const today = new Date().toISOString().split("T")[0];
         const result = await fetch(
           `${base_url}/rest/v1/incentives?addressString=${data.name}&customerClasses=RESIDENTIAL&effectiveOn=${today}`,
@@ -75,7 +72,13 @@ export default function CallToAction({
 
         if (getRateResult.status === "success" && getRateResult.results && getRateResult.results.length > 0) {
           const rate = getRateResult.results[0].rate;
-
+         const saving= (data?.seriesData?.summary?.lifetimeSolarCost  * rate) /100;
+           setKwhData({
+          monthly: savingsMonthly?.cost ?? 0,
+          lifetime: savingsLifetime?.cost ?? 0,
+          saving:saving ?? 0,
+        }); 
+        data.seriesData.firstYear = Math.floor(savingsMonthly?.cost) ?? 0
         } else {
           console.log("No incentive data found");
         }
@@ -400,10 +403,13 @@ export default function CallToAction({
                   <div className="flex items-center gap-2 text-accent-400 text-glow-accent">
                     <DollarSign className="w-4 h-4 icon-glow-accent" />
                     <span className="text-sm">
-                      <NumberAnimation
-                        value={0}
-                        prefix="$"
-                      />{" "}
+                      {parseInt(kwhData.saving) < 0 ? (
+                        <span>
+                          ({<NumberAnimation value={Math.abs(parseInt(kwhData.saving))} prefix="$" />})
+                        </span>
+                      ) : (
+                        <NumberAnimation value={parseInt(kwhData.saving)} prefix="$" />
+                      )}{" "}
                       federal tax credit
                     </span>
                   </div>

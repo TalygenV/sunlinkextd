@@ -36,6 +36,7 @@ interface EnergyChartsProps {
   data: {
     series: Series[];
     seriesData: SeriesEntry[];
+    firstYear?:number;
   };
 }
 
@@ -213,10 +214,10 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
             Utility: ${is1Y ? summary.firstYear.utility : summary.lifetime.utility}
           </div>
           <div className="bg-yellow-300 text-black px-4 py-2 rounded shadow">
-            Solar: ${is1Y ? summary.firstYear.solar : summary.lifetime.solar}
+            Solar: ${is1Y ? summary.firstYear.solar :summary.lifetime.solar}
           </div>
           <div className="bg-sky-400 text-black px-4 py-2 rounded shadow" style={{ backgroundColor: '#C084FC' }}>
-            Net Savings: ${is1Y ? summary.firstYear.savings : summary.lifetime.savings}
+            Net Savings: ${is1Y ? data.firstYear : summary.lifetime.savings}
           </div>
         </div>
       )}
