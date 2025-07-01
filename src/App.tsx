@@ -180,7 +180,7 @@ function App() {
       }}
     >
       <Router>
-        <Navbar />
+        
         <div className="min-h-screen">
           <Routes>
             {(isInstaller || isAdmin) && (
@@ -326,6 +326,7 @@ function App() {
                   {...portalAccessProps}
                   homeComponent={
                     <>
+                    <Navbar />
                       <Hero />
                       <AnimatePresence>
                         {!showForm && (
