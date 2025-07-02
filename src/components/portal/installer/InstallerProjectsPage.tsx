@@ -39,8 +39,8 @@ interface Project {
 // Installer data interface
 interface Installer {
   id: string;
+  installerName?: string;
   name?: string;
-  companyName?: string;
 }
 
 // Component props
@@ -112,6 +112,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        debugger;
         setLoading(true);
         // Get current user
         const user = auth.currentUser;
@@ -122,44 +123,38 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
         if (isAdmin) {
           // Admin: Fetch all projects from all installers
           const allProjects: Project[] = [];
-          const installersRef = ref(db, "installers");
+          const installersRef = ref(db, "users");
           const installersSnapshot = await get(installersRef);
 
           if (installersSnapshot.exists()) {
-            const installersData = installersSnapshot.val();
-
-            // Process each installer's projects
-            for (const [installerId, installerData] of Object.entries(
+            const installersData = installersSnapshot.val() as Record<
+              string,
+              any
+            >;
+            debugger;
+            // 👇 Use the data you got from Firebase
+            const customersArray: Project[] = Object.entries(
               installersData
-            )) {
-              const installerInfo = installerData as any;
+            ).map(([uid, user]) => ({
+              id: uid,
+              customerName: user.name || " ",
+              email: user.email || "No Email",
+              address: user.address || "No Address",
+              systemSize: user.systemSize || 0,
+              panelCount: user.panelCount || 0,
+              assignedDate: user.createdAt || new Date().toISOString(),
+              projectStatus: user.progress?.designSessionState || "new",
+              totalManualPanels: user.manualPanelEnergy || 0,
+              installerId: uid,
+              installerName: user.name || "Unknown",
+              companyName: user.companyName || "Unknown",
+            }));
 
-              if (installerInfo.assignedProjects) {
-                const installerProjects = Object.entries(
-                  installerInfo.assignedProjects
-                ).map(([projectId, projectData]: [string, any]) => ({
-                  id: projectId,
-                  customerName: projectData.customerName || "Unknown Customer",
-                  address: projectData.address || "Unknown Address",
-                  email: projectData.email || "No Email",
-                  systemSize: projectData.systemSize || 0,
-                  panelCount: projectData.panelCount || 0,
-                  assignedDate:
-                    projectData.assignedDate || new Date().toISOString(),
-                  projectStatus: projectData.projectStatus || "new",
-                  totalManualPanels: projectData.totalManualPanels || 0,
-                  installerId: installerId,
-                  installerName: installerInfo.name || "Unknown Installer",
-                  installerCompany:
-                    installerInfo.companyName || "Unknown Company",
-                }));
+            // 👇 Set state using customersArray
+            setProjects(customersArray);
+            setInstallers(customersArray);
 
-                allProjects.push(...installerProjects);
-              }
-            }
-
-            setProjects(allProjects);
-            setFilteredProjects(allProjects);
+            setFilteredProjects(customersArray);
           } else {
             setProjects([]);
             setFilteredProjects([]);
@@ -211,6 +206,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
 
   // Filter and sort projects when filters change
   useEffect(() => {
+    debugger;
     let filtered = [...projects];
 
     // Apply search filter
@@ -226,6 +222,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
 
     // Apply status filter
     if (statusFilter) {
+      debugger;
       filtered = filtered.filter(
         (project) => project.projectStatus === statusFilter
       );
@@ -307,6 +304,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
 
   // Handle status selection
   const handleStatusSelect = (status: string | null) => {
+    debugger;
     setStatusFilter(status);
     setIsStatusDropdownOpen(false);
   };
@@ -405,7 +403,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
                     {selectedInstaller
                       ? `Installer: ${
                           installers.find((i) => i.id === selectedInstaller)
-                            ?.companyName || "Unknown"
+                            ?.installerName || "Unknown"
                         }`
                       : "All Installers"}
                   </span>
@@ -414,7 +412,7 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
                 {/* Installer dropdown */}
                 {isInstallerDropdownOpen && (
                   <div className="absolute top-full left-0 mt-1 w-64 z-10 bg-orange-900 border border-white/10 rounded-lg shadow-xl overflow-hidden">
-                    <div className="p-2">
+                    <div className="max-h-[250px] overflow-y-auto divide-y divide-white/5">
                       <button
                         onClick={() => handleInstallerSelect(null)}
                         className={`w-full text-left px-3 py-2 rounded-md ${
@@ -426,17 +424,17 @@ export const InstallerProjectsPage: React.FC<InstallerProjectsPageProps> = ({
                         All Installers
                       </button>
 
-                      {installers.map((installer) => (
+                      {projects.map((Project) => (
                         <button
-                          key={installer.id}
-                          onClick={() => handleInstallerSelect(installer.id)}
+                          key={Project.id}
+                          onClick={() => handleInstallerSelect(Project.id)}
                           className={`w-full text-left px-3 py-2 rounded-md ${
-                            selectedInstaller === installer.id
+                            selectedInstaller === Project.id
                               ? "bg-orange-500/20 text-yellow-400"
                               : "text-white/70 hover:bg-white/5"
                           }`}
                         >
-                          {installer.companyName || installer.name}
+                          {Project.installerCompany || Project.installerName}
                         </button>
                       ))}
                     </div>
