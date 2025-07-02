@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -13,6 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { AnalyticsEvents, trackEvent } from "../../services/analytics";
 import CallToAction from "../sections/CallToAction";
 import { GenabilityData, SolarData, Tariff } from "@/domain/types";
+import { useNavigate } from "react-router-dom";
 interface DesignFormProps {
   onBack: () => void;
 }
@@ -134,6 +136,8 @@ export default function DesignForm({ onBack }: DesignFormProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNoTariffModal, setShowNoTariffModal] = useState(false);
 
+  const navigate = useNavigate();
+
   // Fallback API keys (for debugging only; move to backend in production)
   // const GENABILITY_APP_ID =
   //   import.meta.env.VITE_GENABILITY_APP_ID ||
@@ -236,65 +240,69 @@ export default function DesignForm({ onBack }: DesignFormProps) {
         }
       );
 
-    if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
-    const kwhData = await kwhCalcRes.json();
-    const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
-const estimatedMonthlyKwh = kwhData?.results?.[0]?.summary?.kW;
-    if (!pricePerKwh) throw new Error("kWh estimate not found.");
+      if (!kwhCalcRes.ok) throw new Error(await kwhCalcRes.text());
+      const kwhData = await kwhCalcRes.json();
+      const pricePerKwh = kwhData?.results?.[0]?.summary?.kWh;
+      const estimatedMonthlyKwh = kwhData?.results?.[0]?.summary?.kW;
+      if (!pricePerKwh) throw new Error("kWh estimate not found.");
 
-    // 4. Estimate system size in kW (used later for solar profile and display)
-    
-    const recommendedSizeKw = estimatedMonthlyKwh * 1000;
- await fetch(`${base_url}/rest/v1/profiles`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        
-    "providerAccountId": providerAccountId,
-    "providerProfileId": `Annual-Consumption-${providerAccountId}`,
-    "profileName": `Annual Consumption for ${providerAccountId}`,
-    "isDefault": true,
-    "serviceTypes": "ELECTRICITY",
-    "sourceId": "ReadingEntry",
-    "readingData": [
-        {
-            "fromDateTime": lastYear,
-            "toDateTime": today,
-            "quantityUnit": "kWh",
-            "quantityValue": pricePerKwh
-        }
-    ]
+      // 4. Estimate system size in kW (used later for solar profile and display)
 
-      }),
-    });
-
-    // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
-    // const profileDataAnnual = await profileResAnnual.json();
-    // 5. Create Solar Profile
-   await fetch(`${base_url}/rest/v1/profiles`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        providerAccountId: providerAccountId,
-        providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
-        groupBy: "YEAR",
-        serviceTypes: "SOLAR_PV",
-        source: { sourceId: "PVWatts", sourceVersion: "8" },
-        properties: {
-          systemSize: { keyName: "systemSize", dataValue: estimatedMonthlyKwh },
-          azimuth: { keyName: "azimuth", dataValue: "180" },
-          losses: { keyName: "losses", dataValue: "15" },
-          inverterEfficiency: { keyName: "inverterEfficiency", dataValue: "96" },
-          tilt: { keyName: "tilt", dataValue: "25" },
+      const recommendedSizeKw = estimatedMonthlyKwh * 1000;
+      await fetch(`${base_url}/rest/v1/profiles`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          providerAccountId: providerAccountId,
+          providerProfileId: `Annual-Consumption-${providerAccountId}`,
+          profileName: `Annual Consumption for ${providerAccountId}`,
+          isDefault: true,
+          serviceTypes: "ELECTRICITY",
+          sourceId: "ReadingEntry",
+          readingData: [
+            {
+              fromDateTime: lastYear,
+              toDateTime: today,
+              quantityUnit: "kWh",
+              quantityValue: pricePerKwh,
+            },
+          ],
+        }),
+      });
+
+      // if (!profileResAnnual.ok) throw new Error(await profileResAnnual.text());
+      // const profileDataAnnual = await profileResAnnual.json();
+      // 5. Create Solar Profile
+      await fetch(`${base_url}/rest/v1/profiles`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${basic_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          providerAccountId: providerAccountId,
+          providerProfileId: `Solar-Production-PVWatts-6kW-${providerAccountId}`,
+          groupBy: "YEAR",
+          serviceTypes: "SOLAR_PV",
+          source: { sourceId: "PVWatts", sourceVersion: "8" },
+          properties: {
+            systemSize: {
+              keyName: "systemSize",
+              dataValue: estimatedMonthlyKwh,
+            },
+            azimuth: { keyName: "azimuth", dataValue: "180" },
+            losses: { keyName: "losses", dataValue: "15" },
+            inverterEfficiency: {
+              keyName: "inverterEfficiency",
+              dataValue: "96",
+            },
+            tilt: { keyName: "tilt", dataValue: "25" },
+          },
+        }),
+      });
 
       // if (!profileRes.ok) throw new Error(await profileRes.text());
       // const profileData = await profileRes.json();
@@ -364,10 +372,10 @@ const estimatedMonthlyKwh = kwhData?.results?.[0]?.summary?.kW;
         }),
       });
 
-    if (!analysis.ok) throw new Error(await analysis.text());
-    const analysisData = await analysis.json();
-   // Pull only the first result
-const seriesResult = analysisData?.results?.[0];
+      if (!analysis.ok) throw new Error(await analysis.text());
+      const analysisData = await analysis.json();
+      // Pull only the first result
+      const seriesResult = analysisData?.results?.[0];
 
       const estimatedAnnualSavings =
         estimatedMonthlyKwh * 12 * pricePerKwh * 0.8; // 80% savings
@@ -389,9 +397,9 @@ const seriesResult = analysisData?.results?.[0];
         providerAccountId,
         penalCount,
         seriesData: {
-    series: seriesResult?.series || [],
-    seriesData: seriesResult?.seriesData || [],
-  },
+          series: seriesResult?.series || [],
+          seriesData: seriesResult?.seriesData || [],
+        },
       };
     } catch (error: unknown) {
       console.error("Genability API error:", error);
@@ -614,6 +622,10 @@ const seriesResult = analysisData?.results?.[0];
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const navigateToSolarResults = () => {
+    navigate(`/solar-results`);
   };
 
   if (!isAddressSupported && !showKwh) {
@@ -1441,6 +1453,16 @@ const seriesResult = analysisData?.results?.[0];
               </motion.button>
             </div>
           </form>
+
+          <motion.button
+            onClick={navigateToSolarResults}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="mt-2 relative z-10 w-full h-[52px] flex items-center justify-center gap-3 px-8 text-white rounded-full shadow-xl transition-all duration-500 bg-blue-500 hover:bg-blue-600 text-sm font-medium tracking-wider group disabled:opacity-50"
+          >
+            Go to Solar Results
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+          </motion.button>
         </motion.div>
       </div>
     </motion.div>

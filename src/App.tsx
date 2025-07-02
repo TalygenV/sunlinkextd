@@ -37,6 +37,7 @@ import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
 import FormContext from "./context/FormContext";
 import { Tools } from "./components/tool";
 import { Calender } from "./components/calender";
+import SolarResults from "./components/calculation/SolarResults";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -316,6 +317,8 @@ function App() {
                 />
               }
             />
+
+            <Route path="/solar-results" element={<SolarResults />} />
 
             <Route path="/design-return" element={<CheckoutReturn />} />
 
