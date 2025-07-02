@@ -28,7 +28,7 @@ import {
 } from "../utils/panelHelpers";
 import NearmapTestingTwo from "./NearmapTestingTwoManual";
 import DefaultInverterShowcase from "../../components/inverter/DefaultInverterShowcase";
-
+import axios from "axios";
 
 // Add this type declaration at the top of the file, after imports
 // Declare global Stripe interface
@@ -486,16 +486,150 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
     }
   };
 
+  const safeStringify = (obj) => {
+    try {
+      return JSON.stringify(obj);
+    } catch {
+      return "Unable to stringify";
+    }
+  };
+
+  function arrayBufferToBase64(buffer) {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  }
+
+  async function checkSurveyAvailability(inputData) {
+    console.log("Received data in checkSurveyAvailability:", {
+      inputData,
+      type: typeof inputData,
+      hasAddress: inputData && "address" in inputData,
+    });
+
+    if (!inputData || typeof inputData !== "object") {
+      throw new Error("Invalid input: Data must be an object.");
+    }
+
+    const address = inputData?.data?.address || inputData?.address;
+    if (!address) {
+      throw new Error("Address is required.");
+    }
+
+    console.log("Making API call to Nearmap with address:", address);
+
+    try {
+      const previewResponse = await callSurveyApi(address, true);
+      console.log("Preview response:", previewResponse);
+
+      if (previewResponse?.surveys && previewResponse.surveys.length > 0) {
+        const actualResponse = await callSurveyApi(address, false);
+        const firstSurvey = actualResponse?.surveys?.[0];
+        const surveyId = firstSurvey?.id;
+        const bbox = actualResponse?.bbox;
+        const transactionToken = actualResponse?.transactionToken;
+
+        const imageResponse = await getSurveyImage(
+          surveyId,
+          bbox,
+          transactionToken
+        );
+        // const imageBase64 = Buffer.from(imageResponse.data).toString("base64");
+        const imageBase64 = arrayBufferToBase64(imageResponse.data);
+
+        const imageDataUrl = `data:${
+          imageResponse.headers["content-type"] || "image/png"
+        };base64,${imageBase64}`;
+
+        let roofData = null;
+        if (firstSurvey?.aiResourceId) {
+          try {
+            const roofResponse = await getRoofData(
+              firstSurvey.aiResourceId,
+              transactionToken
+            );
+            roofData = roofResponse.data;
+          } catch (err) {
+            console.error("Failed to fetch roof data:", err.message);
+          }
+        }
+
+        return {
+          success: true,
+          message: "Survey, image, and roof data retrieved successfully",
+          data: {
+            surveyData: actualResponse,
+            imageData: imageDataUrl,
+            contentType: imageResponse.headers["content-type"],
+            roofData: roofData,
+          },
+        };
+      }
+
+      return {
+        success: false,
+        message: "No survey available for this address",
+        data: previewResponse,
+      };
+    } catch (error) {
+      console.error("Error in survey availability check:", error);
+      throw new Error(
+        `Failed to retrieve survey data: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
+  }
+
+  async function callSurveyApi(address, preview) {
+    const apiKey = "ZWYzZWI4MGQtYjY1MC00YTRmLWJjYjQtNmU3NTAzNGI5N2Yz";
+
+    if (!apiKey) throw new Error("Missing Nearmap API key");
+
+    const formattedAddress = address.trim();
+
+    const url = `https://api.nearmap.com/coverage/v2/tx/address?address=${formattedAddress}&country=US&dates=single&resources=raster:Vert,aiPacks:roof_char&limit=1&sort=captureDate&preview=${preview}&apikey=${apiKey}`;
+
+    const response = await axios.get(url);
+    return response.data;
+  }
+
+  async function getSurveyImage(surveyId, bbox, token) {
+    const url = `https://api.nearmap.com/staticmap/v3/surveys/${surveyId}/Vert.png`;
+
+    const response = await axios.get(url, {
+      params: { bbox, transactionToken: token },
+      responseType: "arraybuffer",
+    });
+
+    return response;
+  }
+
+  async function getRoofData(aiResourceId, token) {
+    const url = `https://api.nearmap.com/ai/features/v4/tx/surveyresources/${aiResourceId}/features.json`;
+
+    return await axios.get(url, {
+      params: { transactionToken: token },
+    });
+  }
+
   // Modify the panel initialization effect to check for roof data
   useEffect(() => {
+    console.log("622", solarData);
+
     if (solarData) {
       try {
+        console.log("626", roofData, manualPanelsOn);
         // If there's no roof data, ensure manual panels mode is activated
         if (!roofData && !manualPanelsOn) {
           console.log(
             "No roof data available - switching to manual panels mode"
           );
-          setManualPanelsOn(true);
+          // setManualPanelsOn(true);
         }
 
         // Use existing panels when reinitializing
@@ -505,7 +639,7 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
       } catch (err) {
         console.error("Error initializing panels:", err);
         // If there's an error, also enable manual panels mode
-        setManualPanelsOn(true);
+        //setManualPanelsOn(true);
       }
     }
   }, [solarData, roofData]);
@@ -858,7 +992,7 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
 
           // Load manual panel data if it exists in the database
           if (snapshot.val().manualPanelsOn !== undefined) {
-            setManualPanelsOn(snapshot.val().manualPanelsOn);
+            //setManualPanelsOn(snapshot.val().manualPanelsOn);
           }
 
           if (snapshot.val().manualPanelRegions) {
@@ -915,24 +1049,54 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
                   address: addressWithoutUSA,
                 });
 
-                const response = await checkAvailabilityFunc({
+                let response = await checkSurveyAvailability({
                   address: addressWithoutUSA,
                 });
                 console.log("Response from checkSurveyAvailability:", response);
 
                 // @ts-ignore
-                if (response.data.success && response.data.data?.imageData) {
+                if (response.success && response.data?.imageData) {
+                  console.error("1059");
+
                   // @ts-ignore
-                  const imageData = response.data.data.imageData;
+                  const imageData = response.data.imageData;
                   // @ts-ignore
-                  const contentType =
-                    response.data.data.contentType || "image/png";
-                  // Create a data URL from the base64 image
-                  const dataUrl = `data:${contentType};base64,${imageData}`;
+                  const contentType = response.data.contentType || "image/png";
+                  // Extract base64 portion from Data URL
+                  const base64Match = imageData.match(
+                    /^data:(.*);base64,(.*)$/
+                  );
+
+                  console.error("1071");
+
+                  if (!base64Match || base64Match.length !== 3) {
+                    console.error("❌ Invalid data URL format.");
+                    return;
+                  }
+
+                  const cleanBase64 = base64Match[2]
+                    .trim()
+                    .replace(/\s/g, "")
+                    .replace(/[^A-Za-z0-9+/=]/g, "");
+
+                  // ✅ Base64 validator
+                  const isBase64 = (str: string) => {
+                    try {
+                      return btoa(atob(str)) === str;
+                    } catch {
+                      return false;
+                    }
+                  };
+
+                  if (!isBase64(cleanBase64)) {
+                    console.error("❌ Invalid base64 image data.");
+                    return;
+                  }
+                  console.error("1096");
 
                   // Convert base64 to blob for storage
                   // Remove any potential whitespace and ensure proper base64 format
-                  const cleanBase64 = imageData.replace(/\s/g, "");
+                  // const cleanBase64 = imageData.replace(/\s/g, "");
                   const byteCharacters = atob(cleanBase64);
                   const byteArrays = [];
                   for (let i = 0; i < byteCharacters.length; i++) {
@@ -943,45 +1107,66 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
                   });
 
                   const formattedAddress = formatAddressForStorage(address);
-                  const imageRef = storageRef(
-                    storage,
-                    `nearmap-images/${formattedAddress}`
-                  );
-                  const uploadResult = await uploadBytes(imageRef, blob);
-                  const downloadUrl = await getDownloadURL(uploadResult.ref);
+
+                  console.error("1112", formattedAddress);
+
+                  // const imageRef = storageRef(
+                  //   storage,
+                  //   `nearmap-images/${formattedAddress}`
+                  // );
+                  // const uploadResult = await uploadBytes(imageRef, blob);
+
+                  // console.error("1120", uploadResult);
+
+                  // const downloadUrl = await getDownloadURL(uploadResult.ref);
+
+                  const tempUrl = URL.createObjectURL(blob);
+
+                  // Now you can use tempUrl to preview or download the image
+                  console.log("Temporary Local Image URL:", tempUrl);
 
                   // @ts-ignore
-                  const bbox = response.data.data.surveyData.bbox;
+                  const bbox = response.data.surveyData.bbox;
                   const newOverlayBounds = parseBbox(bbox);
                   const newMapCenter = calculateMapCenter(newOverlayBounds);
                   let newRoofData = null;
                   // @ts-ignore
-                  if (response.data.data.roofData) {
+                  if (response.data.roofData) {
                     // @ts-ignore
-                    newRoofData = response.data.data.roofData;
+                    console.log(
+                      "new roof data set 1133",
+                      response.data.roofData
+                    );
+                    newRoofData = response.data.roofData;
+
+                    setRoofData(response.data.roofData);
                   } else {
                     console.log("no roof data found");
                   }
 
                   // Update state
-                  setImageUrl(downloadUrl);
+
+                  // Example: show image
+                  setImageUrl(tempUrl);
+                  //setImageUrl(downloadUrl);
                   setOverlayBounds(newOverlayBounds);
 
                   // Only update map center if it wasn't already loaded
                   if (!mapCenter) {
                     setMapCenter(newMapCenter);
                   }
-                  if (newRoofData) {
-                    setRoofData(newRoofData);
-                  }
+                  // if (newRoofData) {
+                  //   console.log("new roof data set 1133");
+                  //   setRoofData(newRoofData);
+                  // }
 
                   // Update database
-                  await update(dataRef, {
-                    imageUrl: downloadUrl,
-                    overlayBounds: newOverlayBounds,
-                    mapCenter: mapCenter || newMapCenter, // Use existing or new map center
-                    roofData: newRoofData || roofData, // Use new or existing roof data
-                  });
+                  // await update(dataRef, {
+                  //   imageUrl: downloadUrl,
+                  //   overlayBounds: newOverlayBounds,
+                  //   mapCenter: mapCenter || newMapCenter, // Use existing or new map center
+                  //   roofData: newRoofData || roofData, // Use new or existing roof data
+                  // });
                   console.log("Nearmap data fetched and updated successfully.");
                 }
               } catch (error) {
@@ -1493,7 +1678,7 @@ const SystemDesign: React.FC<SystemDesignProps> = ({ userData }) => {
                 navigateToBatteriesTab={navigateToBatteriesTab}
                 // Manual panel-related props
                 manualPanelsOn={manualPanelsOn}
-                setManualPanelsOn={setManualPanelsOn}
+                //setManualPanelsOn={setManualPanelsOn}
                 manualPanelRegions={manualPanelRegions}
                 setManualPanelRegions={setManualPanelRegions}
                 selectedRegionId={selectedRegionId}
@@ -1917,7 +2102,7 @@ const DesignStep: React.FC<StepComponentProps> = ({
   navigateToBatteriesTab,
   // Manual panel-related props
   manualPanelsOn,
-  setManualPanelsOn,
+  // setManualPanelsOn,
   manualPanelRegions,
   setManualPanelRegions,
   selectedRegionId,
@@ -1965,7 +2150,7 @@ const DesignStep: React.FC<StepComponentProps> = ({
         navigateToBatteriesTab={navigateToBatteriesTab}
         // Pass manual panel-related props
         manualPanelsOn={manualPanelsOn}
-        setManualPanelsOn={setManualPanelsOn}
+        //setManualPanelsOn={setManualPanelsOn}
         manualPanelRegions={manualPanelRegions}
         setManualPanelRegions={setManualPanelRegions}
         selectedRegionId={selectedRegionId}

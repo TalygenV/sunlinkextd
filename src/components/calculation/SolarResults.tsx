@@ -26,9 +26,21 @@ interface SolarResultsProps {
   address: string;
   utilityCompany: string;
   powerBill: string;
+  onBack: () => void;
+  onContinue: () => void;
 }
 
-const SolarResults = () => {
+const SolarResults: React.FC<SolarResultsProps> = ({
+  firstName,
+  lastName,
+  email,
+  phone,
+  address,
+  utilityCompany,
+  powerBill,
+  onBack,
+  onContinue,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [animateCards, setAnimateCards] = useState(false);
   const [animateChart, setAnimateChart] = useState(false);
@@ -456,6 +468,29 @@ const SolarResults = () => {
             <p className="tesla-body text-gray-300 text-lg">
               Let's design your custom solar system and secure these incentives
             </p>
+          </div>
+
+          <div
+            className={`flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto transition-all duration-700 delay-800 ${
+              animateChart
+                ? "translate-y-0 opacity-100"
+                : "translate-y-8 opacity-0"
+            }`}
+          >
+            <button
+              onClick={onBack}
+              className="tesla-button flex-1 bg-brand-gray hover:bg-brand-gray/80 text-gray-700 py-4 px-6 flex items-center justify-center gap-2 group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
+              Back to Form
+            </button>
+            <button
+              onClick={onContinue}
+              className="tesla-button flex-1 bg-gradient-to-r from-brand-orange to-brand-teal hover:from-brand-orange-dark hover:to-brand-teal-dark text-white py-4 px-6 flex items-center justify-center gap-2 group"
+            >
+              Design My System
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+            </button>
           </div>
         </div>
       </div>

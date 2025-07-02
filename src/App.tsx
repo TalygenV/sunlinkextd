@@ -38,6 +38,7 @@ import FormContext from "./context/FormContext";
 import { Tools } from "./components/tool";
 import { Calender } from "./components/calender";
 import SolarResults from "./components/calculation/SolarResults";
+import Signup from "./components/calculation/Signup";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -318,7 +319,7 @@ function App() {
               }
             />
 
-            <Route path="/solar-results" element={<SolarResults />} />
+            <Route path="/sign-up" element={<Signup />} />
 
             <Route path="/design-return" element={<CheckoutReturn />} />
 

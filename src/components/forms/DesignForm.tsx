@@ -625,7 +625,7 @@ export default function DesignForm({ onBack }: DesignFormProps) {
   };
 
   const navigateToSolarResults = () => {
-    navigate(`/solar-results`);
+    navigate(`/sign-up`);
   };
 
   if (!isAddressSupported && !showKwh) {
