@@ -21,6 +21,7 @@ import {
 import SolarResults from "./SolarResults";
 import VerificationModal from "./VerificationModal";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [currentStep, setCurrentStep] = useState<
@@ -50,6 +51,10 @@ function Signup() {
   const [ineligibilityReason, setIneligibilityReason] = useState<
     "renter" | "property-type"
   >("property-type");
+
+  //navigate hook
+  
+  const navigate = useNavigate();
 
   const utilityCompanies = [
     "Select your utility company",
@@ -122,6 +127,11 @@ function Signup() {
       behavior: "smooth",
     });
   };
+
+
+  const handleNextScreen = () => {
+    navigate(`/solar-results`);
+  }
 
   const handleContinue = () => {
     // Check if user is a renter
@@ -441,6 +451,7 @@ function Signup() {
                     </div>
                   </form>
                   <motion.button
+                  onClick={handleNextScreen}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="mt-2 relative z-10 w-full h-[52px] flex items-center justify-center gap-3 px-8 text-white rounded-full shadow-xl transition-all duration-500 bg-blue-500 hover:bg-blue-600 text-sm font-medium tracking-wider group disabled:opacity-50"

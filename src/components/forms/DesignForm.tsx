@@ -1460,7 +1460,7 @@ export default function DesignForm({ onBack }: DesignFormProps) {
             whileTap={{ scale: 0.98 }}
             className="mt-2 relative z-10 w-full h-[52px] flex items-center justify-center gap-3 px-8 text-white rounded-full shadow-xl transition-all duration-500 bg-blue-500 hover:bg-blue-600 text-sm font-medium tracking-wider group disabled:opacity-50"
           >
-            Go to Solar Results
+            Go to new signIn
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
           </motion.button>
         </motion.div>

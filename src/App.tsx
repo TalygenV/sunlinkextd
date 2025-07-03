@@ -320,6 +320,7 @@ function App() {
             />
 
             <Route path="/sign-up" element={<Signup />} />
+            <Route path="/solar-results" element={<SolarResults/>} />
 
             <Route path="/design-return" element={<CheckoutReturn />} />
 
