@@ -23,9 +23,9 @@ interface SolarResultsProps {
   lastName: string;
   email: string;
   phone: string;
-  address: string;
+  address: object;
   utilityCompany: string;
-  powerBill: string;
+  powerBill: number;
   onBack: () => void;
   onContinue: () => void;
 }

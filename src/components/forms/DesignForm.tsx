@@ -505,6 +505,7 @@ export default function DesignForm({ onBack }: DesignFormProps) {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     if (addressInputRef.current && window.google) {
       console.log("addressInputRef", addressInputRef);
@@ -516,7 +517,6 @@ export default function DesignForm({ onBack }: DesignFormProps) {
           types: ["address"],
         }
       );
-      console.log("autocomplete", autocomplete);
       autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace();
         console.log(
