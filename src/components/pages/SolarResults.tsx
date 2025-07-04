@@ -16,7 +16,7 @@ import {
   Wrench,
   TrendingUp,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface SolarResultsProps {
   firstName: string;
@@ -45,6 +45,8 @@ const SolarResults: React.FC<SolarResultsProps> = ({
   const [animateCards, setAnimateCards] = useState(false);
   const [animateChart, setAnimateChart] = useState(false);
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
+
+  const navigate = useNavigate();
 
   // Fixed system specifications as requested
   const systemSize = 7.2; // kW
@@ -92,6 +94,10 @@ const SolarResults: React.FC<SolarResultsProps> = ({
       clearTimeout(timer2);
     };
   }, []);
+
+  const gotoNextScreen = () => {
+    navigate("/system-overview");
+  };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -479,14 +485,14 @@ const SolarResults: React.FC<SolarResultsProps> = ({
           >
             <button
               onClick={onBack}
-              className="tesla-button flex-1 bg-brand-gray hover:bg-brand-gray/80 text-gray-700 py-4 px-6 flex items-center justify-center gap-2 group"
+              className="tesla-button flex-1 bg-gray-800 hover:bg-gray-700 text-white py-4 px-6 flex items-center justify-center gap-2 group rounded-lg"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
               Back to Form
             </button>
             <button
-              onClick={onContinue}
-              className="tesla-button flex-1 bg-gradient-to-r from-brand-orange to-brand-teal hover:from-brand-orange-dark hover:to-brand-teal-dark text-white py-4 px-6 flex items-center justify-center gap-2 group"
+              onClick={gotoNextScreen}
+              className="tesla-button flex-1 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white py-4 px-6 flex items-center justify-center gap-2 group rounded-lg"
             >
               Design My System
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />

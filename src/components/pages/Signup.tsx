@@ -82,6 +82,8 @@ function Signup() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   //navigate hook
 
@@ -203,18 +205,6 @@ function Signup() {
   );
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
-  // Form validation - more lenient, only require essential fields
-  const isFormValid =
-    firstName.trim() &&
-    lastName.trim() &&
-    email.trim() &&
-    phone.trim() &&
-    isPasswordValid &&
-    passwordsMatch &&
-    ownsHome &&
-    propertyType &&
-    powerBill;
-
   // Scroll to top function
   const scrollToTop = () => {
     window.scrollTo({
@@ -250,6 +240,7 @@ function Signup() {
       const accountName = `customer-account-${randomId}`;
 
       setIsLoading(true);
+      setError(null);
 
       // 1. Create Genability Account
       const accountRes = await fetch(`${base_url}/rest/v1/accounts`, {
@@ -501,6 +492,7 @@ function Signup() {
   const fetchSolarData = async (lat: number, lng: number) => {
     try {
       setIsLoading(true);
+      setError(null);
       setIsAddressSupported(true);
       setShowResults(true);
 
@@ -553,6 +545,9 @@ function Signup() {
 
       if (!addressSupported && (!powerBill || powerBill <= 0)) {
         setShowKwh(true);
+        setError(
+          "This address requires manual design. Please enter your average monthly energy consumption (kWh)."
+        );
         setShowResults(false);
         setIsLoading(false);
         return fallbackSolarData; // instead of `null`
@@ -571,7 +566,9 @@ function Signup() {
     } catch (error: unknown) {
       console.error("Error fetching solar data:", error);
       setShowResults(false);
-
+      setError(
+        "Unable to fetch solar data for this location. Please try another address."
+      );
       return null;
     } finally {
       setIsLoading(false);
@@ -579,32 +576,84 @@ function Signup() {
   };
 
   const handleContinue = async () => {
-    // Check if user is a renter
-    if (ownsHome === "no") {
-      setIneligibilityReason("renter");
-      setShowIneligibleModal(true);
+    // Form validation - more lenient, only require essential fields
+    const isValidForm =
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
+      email.trim() !== "" &&
+      phone.trim() !== "" &&
+      passwordsMatch &&
+      ownsHome !== null &&
+      propertyType !== "" &&
+      powerBill !== 0;
+
+    if (!isValidForm) {
+      setError("Please enter a All Valid Details.");
+
+      console.log(
+        "form is not valid",
+        firstName,
+        lastName,
+        email,
+        phone,
+        passwordsMatch
+      );
+    }
+
+    console.log(selectedTerritory, address, powerBill);
+
+    if (!address.lat || !selectedTerritory || !address.lng || powerBill <= 0) {
+      setError("Please enter a valid address and monthly bill.");
       return;
     }
 
-    // Check if property type is eligible (only Single Family Home qualifies)
-    if (propertyType === "Townhome" || propertyType === "Condo") {
-      setIneligibilityReason("property-type");
-      setShowIneligibleModal(true);
-      return;
+    setIsFormValid(isValidForm);
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Check if user is a renter
+      if (ownsHome === "no") {
+        setIneligibilityReason("renter");
+        setShowIneligibleModal(true);
+        return;
+      }
+
+      // Check if property type is eligible (only Single Family Home qualifies)
+      if (propertyType === "Townhome" || propertyType === "Condo") {
+        setIneligibilityReason("property-type");
+        setShowIneligibleModal(true);
+        return;
+      }
+
+      const genabilityInfo = await fetchUtilityAndTariff();
+      const solarInfo = await fetchSolarData(address.lat, address.lng);
+
+      console.log(genabilityInfo, solarInfo);
+
+      if (genabilityInfo) {
+        setGenabilityData(genabilityInfo);
+        solarInfo.estimatedMonthlyKwh = genabilityInfo.estimatedMonthlyKwh;
+        setSolarData(solarInfo); // Update state here
+        setShowResults(true);
+      } else {
+        setError("Failed to process data. Please try again.");
+      }
+
+      // If all validations pass, show verification modal
+      setShowVerificationModal(true);
+    } catch (err: unknown) {
+      console.error("Error fetching data:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch utility or solar data."
+      );
+      setShowResults(false);
+    } finally {
+      setIsLoading(false);
     }
-
-    // const genabilityInfo = await fetchUtilityAndTariff();
-    // const solarInfo = await fetchSolarData(address.lat, address.lng);
-
-    // if (genabilityInfo) {
-    //   setGenabilityData(genabilityInfo);
-    //   solarInfo.estimatedMonthlyKwh = genabilityInfo.estimatedMonthlyKwh;
-    //   setSolarData(solarInfo); // Update state here
-    //   setShowResults(true);
-    // } 
-
-    // If all validations pass, show verification modal
-    setShowVerificationModal(true);
   };
 
   const handleVerificationComplete = () => {
@@ -993,22 +1042,6 @@ function Signup() {
                           ))}
                         </select>
 
-                        {/* <select
-                          value={utilityCompany}
-                          onChange={(e) => setUtilityCompany(e.target.value)}
-                          className="w-full py-3 px-5 rounded-full overflow-y-auto bg-black/80 border border-white/10 text-white shadow-lg"
-                        >
-                          {utilityCompanies.map((company, index) => (
-                            <option
-                              key={index}
-                              value={index === 0 ? "" : company}
-                              disabled={index === 0}
-                            >
-                              {company}
-                            </option>
-                          ))}
-                        </select> */}
-
                         {territories.length > 0 && (
                           <div className="mt-4 relative">
                             {/* Styled input that acts like a dropdown toggle */}
@@ -1062,6 +1095,7 @@ function Signup() {
                                     key={territory.lseId}
                                     className="px-4 py-3 hover:bg-white/10 cursor-pointer transition"
                                     onClick={() => {
+                                      console.log("1098", territory);
                                       setSelectedTerritory(territory);
                                       setShowDropdown(false);
                                     }}
@@ -1134,6 +1168,35 @@ function Signup() {
                         Go to Solar Results
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                       </motion.button>
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20"
+                        >
+                          <div className="flex items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-400" />
+                            <p className="text-red-400 text-sm font-medium">
+                              {error}
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {isLoading && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                            <p className="text-blue-400 text-sm font-medium">
+                              Loading...
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
                 </div>
