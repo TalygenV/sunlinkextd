@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Zap, Target, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { EnergyOffsetChart } from "./EnergyOffsetChart";
 import { UsageInput } from "./UsageInput";
+import { useNavigate } from "react-router-dom";
 
 interface SummaryPanelProps {}
 
@@ -10,6 +11,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = () => {
   const [selectedTarget, setSelectedTarget] = useState(100);
   const [annualUsage, setAnnualUsage] = useState(15443); // Now editable
   const [showPlanDetails, setShowPlanDetails] = useState(false);
+
+  const navigate = useNavigate();
 
   // Constants for calculations
   const panelWattage = 400; // watts per panel
@@ -82,6 +85,10 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = () => {
       );
       setPanelCount(requiredPanels);
     }
+  };
+
+  const gotoNextScreen = () => {
+    navigate("/system-design");
   };
 
   return (
@@ -327,7 +334,10 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = () => {
         </div>
 
         {/* Finalize Design Button */}
-        <button className="w-full btn-primary text-white font-semibold py-2 lg:py-4 px-3 lg:px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 text-sm lg:text-base mb-4">
+        <button
+          onClick={gotoNextScreen}
+          className="w-full btn-primary text-white font-semibold py-2 lg:py-4 px-3 lg:px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 text-sm lg:text-base mb-4"
+        >
           <span>Finalize Design</span>
           <svg
             className="w-4 h-4 lg:w-5 lg:h-5"

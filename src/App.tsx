@@ -11,7 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ManageInstallersPage } from "./components/portal/installer/settings/ManageInstallersPage";
 import { InstallerProjectsPage } from "./components/portal/installer/InstallerProjectsPage";
 import CheckoutReturn from "./components/design/CheckoutReturn";
-import { SystemDesign } from "./components/design";
+// import { SystemDesign } from "./components/design";
 import { Hero, Navbar } from "./components/layout";
 import {
   ContactSection,
@@ -40,6 +40,7 @@ import { Calender } from "./components/calender";
 import SolarResults from "./components/pages/SolarResults";
 import Signup from "./components/pages/Signup";
 import SystemOverview from "./components/pages/SystemOverview/SystemOverview";
+import SystemDesign from "./components/pages/SystemDesign/SystemDesign";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -313,7 +314,7 @@ function App() {
                 </>
               )}
 
-              <Route
+              {/* <Route
                 path="/design"
                 element={
                   <RouteController
@@ -322,11 +323,12 @@ function App() {
                     loadingComponent={<LoadingComponent />}
                   />
                 }
-              />
+              /> */}
 
               <Route path="/sign-up" element={<Signup />} />
               <Route path="/solar-results" element={<SolarResults />} />
               <Route path="/system-overview" element={<SystemOverview />} />
+              <Route path="/system-design" element={<SystemDesign />} />
 
               <Route path="/design-return" element={<CheckoutReturn />} />
 
