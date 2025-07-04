@@ -37,8 +37,8 @@ import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
 import FormContext from "./context/FormContext";
 import { Tools } from "./components/tool";
 import { Calender } from "./components/calender";
-import SolarResults from "./components/calculation/SolarResults";
-import Signup from "./components/calculation/Signup";
+import SolarResults from "./components/pages/SolarResults";
+import Signup from "./components/pages/Signup";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -171,200 +171,208 @@ function App() {
   // }, 60 * 1000); // 60 seconds
 
   return (
-    <FormContext.Provider
-      value={{
-        showForm,
-        setShowForm,
-        isAuthenticated,
-        setIsAuthenticated,
-        userData,
-        setUserData,
-      }}
-    >
-      <Router>
-        <Navbar />
-        <div className="min-h-screen">
-          <Routes>
-            {(isInstaller || isAdmin) && (
-              <>
-                <Route
-                  path="/installer"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <Navigate to="/installer/projects" replace />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/settings/manage-installers"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <ManageInstallersPage
-                          isAdmin={isAdmin}
-                          onClose={function (): void {
-                            throw new Error("Function not implemented.");
-                          }}
-                        />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/projects"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <InstallerProjectsPage isAdmin={isAdmin} />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/project/:projectId"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={<ProjectDetailsPage isAdmin={isAdmin} />}
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/project/:projectId/progress"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <InstallerProgressTracker isAdmin={isAdmin} />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/project/:projectId/documents"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <InstallerDocumentsPage isAdmin={isAdmin} />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/settings"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={
-                        <InstallerSettingsPage isAdmin={isAdmin} />
-                      }
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/settings/add-installer"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={<AddInstallerPage isAdmin={isAdmin} />}
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-                <Route
-                  path="/installer/tools"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={<Tools />}
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
+    <>
+      <div id="recaptcha-container" style={{ display: "none" }}></div>
+      <FormContext.Provider
+        value={{
+          showForm,
+          setShowForm,
+          isAuthenticated,
+          setIsAuthenticated,
+          userData,
+          setUserData,
+        }}
+      >
+        <Router>
+          <Navbar />
+          <div className="min-h-screen">
+            <Routes>
+              {(isInstaller || isAdmin) && (
+                <>
+                  <Route
+                    path="/installer"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <Navigate to="/installer/projects" replace />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/settings/manage-installers"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <ManageInstallersPage
+                            isAdmin={isAdmin}
+                            onClose={function (): void {
+                              throw new Error("Function not implemented.");
+                            }}
+                          />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/projects"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <InstallerProjectsPage isAdmin={isAdmin} />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/project/:projectId"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <ProjectDetailsPage isAdmin={isAdmin} />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/project/:projectId/progress"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <InstallerProgressTracker isAdmin={isAdmin} />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/project/:projectId/documents"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <InstallerDocumentsPage isAdmin={isAdmin} />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/settings"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={
+                          <InstallerSettingsPage isAdmin={isAdmin} />
+                        }
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/settings/add-installer"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={<AddInstallerPage isAdmin={isAdmin} />}
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                  <Route
+                    path="/installer/tools"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={<Tools />}
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
 
-                <Route
-                  path="/installer/calendar"
-                  element={
-                    <RouteController
-                      {...portalAccessProps}
-                      portalComponent={<Calender />}
-                      loadingComponent={<LoadingComponent />}
-                    />
-                  }
-                />
-              </>
-            )}
+                  <Route
+                    path="/installer/calendar"
+                    element={
+                      <RouteController
+                        {...portalAccessProps}
+                        portalComponent={<Calender />}
+                        loadingComponent={<LoadingComponent />}
+                      />
+                    }
+                  />
+                </>
+              )}
 
-            <Route
-              path="/design"
-              element={
-                <RouteController
-                  {...portalAccessProps}
-                  designComponent={<SystemDesign userData={userData} />}
-                  loadingComponent={<LoadingComponent />}
-                />
-              }
-            />
+              <Route
+                path="/design"
+                element={
+                  <RouteController
+                    {...portalAccessProps}
+                    designComponent={<SystemDesign userData={userData} />}
+                    loadingComponent={<LoadingComponent />}
+                  />
+                }
+              />
 
-            <Route path="/sign-up" element={<Signup />} />
-            <Route path="/solar-results" element={<SolarResults/>} />
+              <Route path="/sign-up" element={<Signup />} />
+              <Route path="/solar-results" element={<SolarResults />} />
 
-            <Route path="/design-return" element={<CheckoutReturn />} />
+              <Route path="/design-return" element={<CheckoutReturn />} />
 
-            <Route
-              index
-              element={
-                <RouteController
-                  {...portalAccessProps}
-                  homeComponent={
-                    <>
-                      <Hero />
-                      <AnimatePresence>
-                        {!showForm && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                          >
-                            <div id="why-sunlink">
-                              <InstallationSection />
-                            </div>
-                            <div id="plans-pricing">
-                              <SavingsSection />
-                            </div>
-                            <div id="contact">
-                              <ReviewSection />
-                              <ContactSection />
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  }
-                  loadingComponent={<LoadingComponent />}
-                />
-              }
-            />
+              <Route
+                index
+                element={
+                  <RouteController
+                    {...portalAccessProps}
+                    homeComponent={
+                      <>
+                        <Hero />
+                        <AnimatePresence>
+                          {!showForm && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                            >
+                              <div id="why-sunlink">
+                                <InstallationSection />
+                              </div>
+                              <div id="plans-pricing">
+                                <SavingsSection />
+                              </div>
+                              <div id="contact">
+                                <ReviewSection />
+                                <ContactSection />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    }
+                    loadingComponent={<LoadingComponent />}
+                  />
+                }
+              />
 
-            <Route path="/order-summary" element={<OrderSummary />} />
-            <Route path="/installer-contract" element={<InstallerContract />} />
-          </Routes>
-        </div>
-      </Router>
-    </FormContext.Provider>
+              <Route path="/order-summary" element={<OrderSummary />} />
+              <Route
+                path="/installer-contract"
+                element={<InstallerContract />}
+              />
+            </Routes>
+          </div>
+        </Router>
+      </FormContext.Provider>
+    </>
   );
 }
 
