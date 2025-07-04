@@ -46,7 +46,7 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
   const [lifetimeData, setLifetimeData] = useState<any>(null);
   const [summary, setSummary] = useState<{
     firstYear?: { utility: string; solar: string; savings: string };
-    lifetime?: { utility: string; solar: string; savings: string };
+    lifetime?: { utility: string };
   }>({});
 
   useEffect(() => {
@@ -89,34 +89,35 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
 
-    const lifetimeLabels: string[] = [];
+   
     const lifetimeUtility: number[] = [];
-    const lifetimeSolarData: number[] = [];
-    const lifetimeNetSavings: number[] = [];
 
-    for (let year = minYear; year <= maxYear; year++) {
-      lifetimeLabels.push(year.toString());
+const chartYears = [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
+const lifetimeLabels = chartYears.map(offset =>
+  offset === 0 ? 'Now' : `${offset}y`
+);
+    for (const offset of chartYears) {
+        const year = minYear + offset;
 
-      const before = seriesData.find(d => d.seriesId === 5 && d.fromDateTime.startsWith(`${year}`))?.cost || 0;
-      const after = seriesData.find(d => d.seriesId === 6 && d.fromDateTime.startsWith(`${year}`))?.cost || 0;
-      const solar = seriesData.find(d => d.seriesId === 7 && d.fromDateTime.startsWith(`${year}`))?.cost || 0;
+
+
+  const after = seriesData.find(d => d.seriesId === 6 && d.fromDateTime.startsWith(`${year}`))?.cost || 0;
+
 
       lifetimeUtility.push(after);
-      lifetimeSolarData.push(solar);
-      lifetimeNetSavings.push(before - after - solar);
+    
+      
     }
 
-    const lifetimeBefore = series.find(s => s.seriesId === 5)?.cost || 0;
+  
     const lifetimeAfter = series.find(s => s.seriesId === 6)?.cost || 0;
-    const lifetimeSolar = series.find(s => s.seriesId === 7)?.cost || 0;
-    const lifetimeSavings = lifetimeBefore - lifetimeAfter - lifetimeSolar;
+
+ 
 
     setMonthlyData({
       labels: monthLabels,
       datasets: [
         { label: 'Utility Cost', data: utilityCosts, backgroundColor: '#333' },
-        { label: 'Solar Cost', data: solarCosts, backgroundColor: '#f4c542' },
-        { label: 'Net Savings', data: netSavings, backgroundColor: '#C084FC' },
       ]
     });
 
@@ -124,8 +125,7 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
       labels: lifetimeLabels,
       datasets: [
         { label: 'Utility Cost', data: lifetimeUtility, backgroundColor: '#333' },
-        { label: 'Solar Cost', data: lifetimeSolarData, backgroundColor: '#f4c542' },
-        { label: 'Net Savings', data: lifetimeNetSavings, backgroundColor: "#C084FC" },
+        
       ]
     });
 
@@ -137,8 +137,6 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
       },
       lifetime: {
         utility: lifetimeAfter.toLocaleString(),
-        solar: lifetimeSolar.toLocaleString(),
-        savings: lifetimeSavings.toLocaleString()
       }
     });
   }, [data]);
@@ -195,13 +193,26 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
         // <motion.div key={selectedTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="w-full h-[20vh]">
 
-           <Bar
-    data={is1Y ? monthlyData : lifetimeData}
-    options={{
-      ...chartOptions,
-      maintainAspectRatio: false, // 👈 Important!
-    }}
-  />
+         <Bar
+  data={is1Y ? monthlyData : lifetimeData}
+  options={{
+    ...chartOptions,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#fff' } },
+      tooltip: {
+        callbacks: {
+          title: (context) => {
+            const label = context[0].label;
+            return label === 'Now'
+              ? 'Now'
+              : `${label.replace('y', '')} years`;
+          },
+        },
+      },
+    },
+  }}
+/>
           </div>
         // </motion.div>
       )}
@@ -213,10 +224,10 @@ export default function EnergyCharts({ data }: EnergyChartsProps) {
             Utility: ${is1Y ? summary.firstYear.utility : summary.lifetime.utility}
           </div>
           <div className="bg-yellow-300 text-black px-4 py-2 rounded shadow">
-            Solar: ${is1Y ? summary.firstYear.solar : summary.lifetime.solar}
+            Solar: ${is1Y ? summary.firstYear.solar : ''}
           </div>
           <div className="bg-sky-400 text-black px-4 py-2 rounded shadow" style={{ backgroundColor: '#C084FC' }}>
-            Net Savings: ${is1Y ? summary.firstYear.savings : summary.lifetime.savings}
+            Net Savings: ${is1Y ? summary.firstYear.savings : ''}
           </div>
         </div>
       )}
