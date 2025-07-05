@@ -4,6 +4,7 @@ import { PrequalificationModal } from "./PrequalificationModal";
 import { Zap, ChevronLeft, ChevronRight, Link } from "lucide-react";
 import BatteryModel from "./BatteryModel";
 import { Battery } from "./BatteryCard";
+import { useNavigate } from "react-router-dom";
 
 const batteries: Battery[] = [
   {
@@ -77,6 +78,7 @@ function SystemDesign() {
   const [quantity, setQuantity] = useState<number>(2);
   const [showPrequalModal, setShowPrequalModal] = useState<boolean>(false);
   const batteryModelRef = useRef<any>(null);
+  const navigate = useNavigate();
 
   const selectedBattery = batteries[selectedBatteryIndex];
   const totalPrice = selectedBattery.price * quantity;
@@ -122,6 +124,10 @@ function SystemDesign() {
     if (batteryModelRef.current) {
       batteryModelRef.current.rotateModel(direction);
     }
+  };
+
+  const gotoNextScreen = () => {
+    navigate("/choose-plan");
   };
 
   return (
@@ -230,7 +236,9 @@ function SystemDesign() {
         <div className="mt-8 sm:mt-16 text-center">
           <p className="text-gray-300 text-sm">
             Don't need a battery?{" "}
-            <button className="text-white hover:text-gray-300 transition-colors underline">
+            <button
+            onClick={gotoNextScreen}
+             className="text-white hover:text-gray-300 transition-colors underline">
               Skip
             </button>
           </p>

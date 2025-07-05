@@ -37,10 +37,12 @@ import { RouteControllerProps } from "./domain/interfaces/RouteInterface";
 import FormContext from "./context/FormContext";
 import { Tools } from "./components/tool";
 import { Calender } from "./components/calender";
-import SolarResults from "./components/pages/SolarResults";
-import Signup from "./components/pages/Signup";
+import SolarResults from "./components/pages/Signup/SolarResults";
+import Signup from "./components/pages/Signup/Signup";
 import SystemOverview from "./components/pages/SystemOverview/SystemOverview";
 import SystemDesign from "./components/pages/SystemDesign/SystemDesign";
+import ChoosePlan from "./components/pages/Plan/ChoosePlan";
+import StepLayout from "./components/layout/StepLayout";
 
 const RouteController: React.FC<RouteControllerProps> = ({
   isAuthenticated,
@@ -78,6 +80,8 @@ const RouteController: React.FC<RouteControllerProps> = ({
   return <>{homeComponent}</>;
 };
 
+type AppState = "auth" | "main" | "contract" | "success" | "photos" | "portal";
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInstaller, setIsInstaller] = useState(false);
@@ -85,6 +89,7 @@ function App() {
   const [hasCompletedPurchase] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [appState, setAppState] = useState<AppState>("main");
 
   const [userData, setUserData] = useState<UserData>({
     name: "",
@@ -327,8 +332,34 @@ function App() {
 
               <Route path="/sign-up" element={<Signup />} />
               <Route path="/solar-results" element={<SolarResults />} />
-              <Route path="/system-overview" element={<SystemOverview />} />
+              {/* <Route path="/system-overview" element={<SystemOverview />} />
               <Route path="/system-design" element={<SystemDesign />} />
+              <Route path="/choose-plan" element={<ChoosePlan />} /> */}
+
+              <Route
+                path="/system-overview"
+                element={
+                  <StepLayout appState={appState} setAppState={setAppState}>
+                    <SystemOverview />
+                  </StepLayout>
+                }
+              />
+              <Route
+                path="/system-design"
+                element={
+                  <StepLayout appState={appState} setAppState={setAppState}>
+                    <SystemDesign />
+                  </StepLayout>
+                }
+              />
+              <Route
+                path="/choose-plan"
+                element={
+                  <StepLayout appState={appState} setAppState={setAppState}>
+                    <ChoosePlan appState={appState} setAppState={setAppState} />
+                  </StepLayout>
+                }
+              />
 
               <Route path="/design-return" element={<CheckoutReturn />} />
 

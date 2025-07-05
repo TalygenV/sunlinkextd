@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Sun, Battery, Zap, Home, Plus, Minus, CreditCard, Shield, Phone, ArrowRight, TrendingUp, DollarSign, Leaf, ToggleLeft, ToggleRight, Lock, CheckCircle, AlertTriangle, Receipt, Wrench, Camera, UserCheck, Award, AlertOctagon, Clock, X, AlertCircle as AlertIcon } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { stripeProducts } from '../stripe-config';
 import ExpertContactModal from './ExpertContactModal';
 import FinancingOptionsIframe from './FinancingOptionsIframe';
 
@@ -197,13 +195,13 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
     if (paymentStep === 'processing') {
       return (
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+          <div className="w-16 h-16 bg-black border-white/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h4 className="text-2xl font-light text-black mb-4">Processing Payment</h4>
-          <p className="text-gray-600 mb-6">Securing your solar system order...</p>
+          <h4 className="text-2xl font-light text-white mb-4">Processing Payment</h4>
+          <p className="text-white/60 mb-6">Securing your solar system order...</p>
           <div className="flex justify-center">
-            <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-white/20 border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
       );
@@ -212,13 +210,13 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
     if (paymentStep === 'success') {
       return (
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-black border-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-white" />
           </div>
-          <h4 className="text-2xl font-light text-black mb-4">Payment Successful!</h4>
-          <p className="text-gray-600 mb-6">Your $500 deposit has been processed successfully.</p>
+          <h4 className="text-2xl font-light text-white mb-4">Payment Successful!</h4>
+          <p className="text-white/60 mb-6">Your $500 deposit has been processed successfully.</p>
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center space-x-2 mb-2">
+            <div className="flex items-center justify-center space-x-2 mb-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
               <span className="font-medium text-green-800">Order Confirmed</span>
             </div>
@@ -306,11 +304,11 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
 
         {/* Payment Form */}
         <div className="space-y-4">
-          <h4 className="font-medium text-black">Payment Information</h4>
+          <h4 className="font-medium text-white">Payment Information</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-black mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
                 Cardholder Name
               </label>
               <input
@@ -319,12 +317,12 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="tesla-input w-full px-4 py-3 rounded-lg text-black placeholder-gray-500"
+                className="tesla-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
                 placeholder="John Doe"
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-black mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
                 Email Address
               </label>
               <input
@@ -333,14 +331,14 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="tesla-input w-full px-4 py-3 rounded-lg text-black placeholder-gray-500"
+                className="tesla-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
                 placeholder="john@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="cardNumber" className="block text-sm font-medium text-black mb-2">
+            <label htmlFor="cardNumber" className="block text-sm font-medium text-white mb-2">
               Card Number
             </label>
             <input
@@ -349,7 +347,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
               required
               value={cardNumber}
               onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              className="tesla-input w-full px-4 py-3 rounded-lg text-black placeholder-gray-500"
+              className="tesla-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
               placeholder="4242 4242 4242 4242"
               maxLength={19}
             />
@@ -357,7 +355,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="expiryDate" className="block text-sm font-medium text-black mb-2">
+              <label htmlFor="expiryDate" className="block text-sm font-medium text-white mb-2">
                 Expiry Date
               </label>
               <input
@@ -366,13 +364,13 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
                 required
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                className="tesla-input w-full px-4 py-3 rounded-lg text-black placeholder-gray-500"
+                className="tesla-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
                 placeholder="MM/YY"
                 maxLength={5}
               />
             </div>
             <div>
-              <label htmlFor="cvc" className="block text-sm font-medium text-black mb-2">
+              <label htmlFor="cvc" className="block text-sm font-medium text-white mb-2">
                 CVC
               </label>
               <input
@@ -381,7 +379,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
                 required
                 value={cvc}
                 onChange={(e) => setCvc(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                className="tesla-input w-full px-4 py-3 rounded-lg text-black placeholder-gray-500"
+                className="tesla-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
                 placeholder="123"
                 maxLength={3}
               />
@@ -391,15 +389,15 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
 
         {/* Security Features */}
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 text-sm text-gray-700">
+          <div className="flex items-center space-x-2 text-sm text-white/60">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span>Locks in current system pricing</span>
           </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-700">
+          <div className="flex items-center space-x-2 text-sm text-white/60">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span>Reserves installation slot</span>
           </div>
-          <div className="flex items-center space-x-2 text-sm text-gray-700">
+          <div className="flex items-center space-x-2 text-sm text-white/60">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span>100% refundable within 3 days</span>
           </div>
@@ -409,7 +407,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
         <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
           <button
             type="submit"
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex-1 py-3 px-6 rounded-xl font-medium flex items-center justify-center space-x-2 transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg"
+            className="bg-blue-500 hover:bg-blue-700 text-white flex-1 py-3 px-6 rounded-xl font-medium flex items-center justify-center space-x-2 transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg"
           >
             <Lock className="w-4 h-4" />
             <span>Pay $500 Deposit</span>
@@ -417,7 +415,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
           <button
             type="button"
             onClick={() => setShowStripeForm(false)}
-            className="tesla-button-secondary px-6 py-3 rounded-xl font-medium"
+            className="bg-white/60 px-6 py-3 rounded-xl font-medium text-white"
           >
             Cancel
           </button>
@@ -438,8 +436,8 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
   };
 
   const StripeModal: React.FC = () => (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="tesla-card-light rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+    <div className="fixed inset-0 bg-white/20 z-50 flex items-center justify-center p-4">
+      <div className="bg-black rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -447,8 +445,8 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
               <Lock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-light text-black">Secure Your Solar System</h3>
-              <p className="text-sm text-gray-600">Complete your $500 deposit payment</p>
+              <h3 className="text-xl font-light text-white">Secure Your Solar System</h3>
+              <p className="text-sm text-white/60">Complete your $500 deposit payment</p>
             </div>
           </div>
           <button
@@ -535,27 +533,27 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
 
           {/* Blended Total Cost and Tax Credit Section - WHITE BACKGROUND */}
           <div className="border-t border-white/20 pt-6 mt-6">
-            <div className="bg-white rounded-xl p-6 border border-gray-200">
+            <div className="rounded-xl p-6 border border-gray-200">
               {/* Total System Cost Header */}
               <div className="flex justify-between items-center mb-6">
-                <span className="text-xl font-medium text-gray-900">Total System Cost (Before Incentives)</span>
-                <span className="text-2xl font-bold text-gray-900">${totalPrice.toLocaleString()}</span>
+                <span className="text-xl font-medium text-white">Total System Cost (Before Incentives)</span>
+                <span className="text-2xl font-bold text-white">${totalPrice.toLocaleString()}</span>
               </div>
 
               {/* Tax Credit Toggle */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-gray-600" />
-                  <span className="text-base font-medium text-gray-900">Apply Tax Incentives</span>
+                  <Shield className="w-5 h-5 text-white" />
+                  <span className="text-base font-medium text-white">Apply Tax Incentives</span>
                 </div>
                 <button
                   onClick={() => setShowIncentives(!showIncentives)}
                   className="flex items-center"
                 >
                   {showIncentives ? (
-                    <ToggleRight className="w-8 h-8 text-gray-900" />
+                    <ToggleRight className="w-8 h-8 text-white" />
                   ) : (
-                    <ToggleLeft className="w-8 h-8 text-gray-400" />
+                    <ToggleLeft className="w-8 h-8 text-white/60" />
                   )}
                 </button>
               </div>
@@ -706,7 +704,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
             disabled={!canProceedWithPayment}
             className={`flex-1 py-5 px-8 rounded-xl font-semibold text-xl flex items-center justify-center space-x-3 transition-all duration-200 transform shadow-lg ${
               canProceedWithPayment
-                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white hover:scale-[1.02] hover:shadow-xl'
+                ? 'bg-blue-500 hover:bg-blue-700 text-white hover:scale-[1.02] hover:shadow-xl'
                 : 'bg-gray-400 text-gray-600 cursor-not-allowed'
             }`}
           >
@@ -716,7 +714,7 @@ const SystemOrderSummary: React.FC<SystemOrderSummaryProps> = ({
           
           <button 
             onClick={() => setShowExpertModal(true)}
-            className="tesla-button-secondary py-5 px-8 rounded-xl font-medium flex items-center justify-center space-x-2"
+            className="bg-white/80 py-5 px-8 rounded-xl font-medium flex items-center justify-center space-x-2"
           >
             <Phone className="w-5 h-5" />
             <span>Chat with Expert</span>

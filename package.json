@@ -21,6 +21,7 @@
     "@react-three/fiber": "^8.18.0",
     "@stripe/react-stripe-js": "^3.6.0",
     "@stripe/stripe-js": "^7.2.0",
+    "@supabase/supabase-js": "^2.50.3",
     "@turf/turf": "^7.2.0",
     "@types/leaflet-draw": "^1.0.11",
     "axios": "^1.4.0",

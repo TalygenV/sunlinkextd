@@ -7,7 +7,7 @@ import {
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
-import { auth } from "../../services/firebase";
+import { auth } from "../../../services/firebase";
 import {
   ConfirmationResult,
   RecaptchaVerifier,

@@ -3,21 +3,21 @@ import Header from "./Header";
 import SystemOrderSummary from "./SystemOrderSummary";
 import ROIBreakdown from "./ROIBreakdown";
 import Warranties from "./Warranties";
-import LoginPage from "./auth/LoginPage";
-import SignupPage from "./auth/SignupPage";
 import ContractSigningPage from "./ContractSigningPage";
 import SuccessPage from "./SuccessPage";
 import PhotoUploadPage from "./PhotoUploadPage";
 import CustomerPortal from "./CustomerPortal";
-import { useAuth } from "./hooks/useAuth";
+import { Dispatch, SetStateAction } from "react";
 
 type AuthMode = "login" | "signup";
 type AppState = "auth" | "main" | "contract" | "success" | "photos" | "portal";
 
-function ChoosePlan() {
-  const { user, loading: authLoading } = useAuth();
-  const [appState, setAppState] = useState<AppState>("auth");
+interface ChoosePlanProps {
+  appState: AppState;
+  setAppState: Dispatch<SetStateAction<AppState>>;
+}
 
+const ChoosePlan: React.FC<ChoosePlanProps> = ({ appState, setAppState }) => {
   const [selectedPlan, setSelectedPlan] = useState("25-year");
   const [hasEVCharger, setHasEVCharger] = useState(false);
   const [hasReRoof, setHasReRoof] = useState(false);
@@ -60,23 +60,23 @@ function ChoosePlan() {
     setBatteryCount(Math.max(0, count));
   };
 
-  const handleAuthSuccess = () => {
-    setAppState("main");
-    // Set customer info from user data
-    if (user) {
-      setCustomerInfo({
-        name:
-          user.user_metadata?.full_name ||
-          `${user.user_metadata?.first_name || ""} ${
-            user.user_metadata?.last_name || ""
-          }`.trim() ||
-          user.email?.split("@")[0] ||
-          "Customer",
-        email: user.email || "",
-        address: "123 Main Street, Anytown, CA 90210", // This would come from user profile in real app
-      });
-    }
-  };
+  // const handleAuthSuccess = () => {
+  //   setAppState("main");
+  //   // Set customer info from user data
+  //   if (user) {
+  //     setCustomerInfo({
+  //       name:
+  //         user.user_metadata?.full_name ||
+  //         `${user.user_metadata?.first_name || ""} ${
+  //           user.user_metadata?.last_name || ""
+  //         }`.trim() ||
+  //         user.email?.split("@")[0] ||
+  //         "Customer",
+  //       email: user.email || "",
+  //       address: "123 Main Street, Anytown, CA 90210", // This would come from user profile in real app
+  //     });
+  //   }
+  // };
 
   const handlePaymentSuccess = () => {
     setAppState("contract");
@@ -115,36 +115,36 @@ function ChoosePlan() {
   }, []);
 
   // Handle authentication state
-  useEffect(() => {
-    if (!authLoading) {
-      if (user) {
-        // Set customer info when user is available
-        setCustomerInfo({
-          name:
-            user.user_metadata?.full_name ||
-            `${user.user_metadata?.first_name || ""} ${
-              user.user_metadata?.last_name || ""
-            }`.trim() ||
-            user.email?.split("@")[0] ||
-            "Customer",
-          email: user.email || "",
-          address: "123 Main Street, Anytown, CA 90210", // This would come from user profile in real app
-        });
+  // useEffect(() => {
+  //   if (!true) {
+  //     if (user) {
+  //       // Set customer info when user is available
+  //       setCustomerInfo({
+  //         name:
+  //           user.user_metadata?.full_name ||
+  //           `${user.user_metadata?.first_name || ""} ${
+  //             user.user_metadata?.last_name || ""
+  //           }`.trim() ||
+  //           user.email?.split("@")[0] ||
+  //           "Customer",
+  //         email: user.email || "",
+  //         address: "123 Main Street, Anytown, CA 90210", // This would come from user profile in real app
+  //       });
 
-        // Check if we're coming from a successful payment
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get("success") === "true") {
-          setAppState("success");
-        } else {
-          setAppState("main");
-        }
-      } else {
-        setAppState("auth");
-      }
-    }
-  }, [user, authLoading]);
+  //       // Check if we're coming from a successful payment
+  //       const urlParams = new URLSearchParams(window.location.search);
+  //       if (urlParams.get("success") === "true") {
+  //         setAppState("success");
+  //       } else {
+  //         setAppState("main");
+  //       }
+  //     } else {
+  //       setAppState("auth");
+  //     }
+  //   }
+  // });
 
-  if (authLoading) {
+  if (false) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="tesla-card rounded-xl p-8 text-center animate-fade-in">
@@ -201,11 +201,11 @@ function ChoosePlan() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onGoToPortal={handleGoToPortal} />
+    <div className="min-h-screen bg-black">
+      {/* <Header onGoToPortal={handleGoToPortal} /> */}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+        <div className="space-y-8 mt-8">
           {/* Combined System Overview and Order Summary */}
           <SystemOrderSummary
             systemSize={systemSize}
@@ -239,6 +239,6 @@ function ChoosePlan() {
       </div>
     </div>
   );
-}
+};
 
 export default ChoosePlan;

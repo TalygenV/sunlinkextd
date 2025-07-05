@@ -1,16 +1,11 @@
-import React from 'react';
-import { Shield, Zap, User, LogOut, LayoutDashboard } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useSubscription } from '../hooks/useSubscription';
+import React from "react";
+import { Shield, Zap, User, LogOut, LayoutDashboard } from "lucide-react";
 
 interface HeaderProps {
   onGoToPortal?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onGoToPortal }) => {
-  const { user, signOut } = useAuth();
-  const { activePlan } = useSubscription();
-
   return (
     <header className="bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onGoToPortal }) => {
               SunLink
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-8">
             <div className="hidden sm:flex items-center space-x-6 text-sm text-gray-600 font-gotham-book">
               <div className="flex items-center space-x-2">
@@ -32,8 +27,8 @@ const Header: React.FC<HeaderProps> = ({ onGoToPortal }) => {
                 <span>Instant Activation</span>
               </div>
             </div>
-            
-            {user && (
+
+            {false && (
               <div className="flex items-center space-x-4 pl-6 border-l border-gray-200">
                 {onGoToPortal && (
                   <button
@@ -44,8 +39,8 @@ const Header: React.FC<HeaderProps> = ({ onGoToPortal }) => {
                     <span className="hidden sm:inline">Customer Portal</span>
                   </button>
                 )}
-                
-                <div className="flex items-center space-x-3">
+
+                {/* <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-gray-600" />
                   </div>
@@ -60,9 +55,9 @@ const Header: React.FC<HeaderProps> = ({ onGoToPortal }) => {
                       <div className="text-xs text-gray-500 font-gotham-book">{activePlan}</div>
                     )}
                   </div>
-                </div>
+                </div> */}
                 <button
-                  onClick={signOut}
+                  //onClick={signOut}
                   className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors font-gotham-book"
                 >
                   <LogOut className="w-4 h-4" />

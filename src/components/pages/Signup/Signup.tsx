@@ -24,7 +24,7 @@ import VerificationModal from "./VerificationModal";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { GenabilityData, SolarData, Tariff } from "@/domain/types";
-import { CallToAction } from "../sections";
+import { CallToAction } from "../../sections";
 
 type Territory = {
   name: string;
